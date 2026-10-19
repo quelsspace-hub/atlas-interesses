@@ -113,3 +113,9 @@ REQ-008 → D-015 / VAULT_CONTRACT §7.5 → S-1 / AC-07 → [TEST_PLAN §19](TE
 | Requisito | Implementação/evidência | Estado |
 | --- | --- | --- |
 | AC-07 / D-016 | `poc/src/backup/compression.ts`, verificador/exportador/restaurador; TEST_PLAN §20 | Mecanismo explícito VERIFICADO; número padrão PENDENTE; AC-07 parcial |
+
+## AC-13 Windows — 19/10/2026
+
+| Requisito | Implementação/evidência | Estado |
+| --- | --- | --- |
+| REQ-008 / AC-13 / DQ-07 | `poc/bench/ac13-windows.ts`; `poc/bench/results/ac13-windows-2026-10-19.jsonl`; TEST_PLAN §21 | Extração por Expand-Archive, tar.exe e Shell.Application VERIFICADA (12/12); Explorador manual PENDENTE; AC-13 completo não aprovado |

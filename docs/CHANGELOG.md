@@ -1,5 +1,11 @@
 # Histórico de mudanças
 
+## 2026-10-19 — AC-13: extração pelos componentes do Windows 11
+
+- Retomada após o trabalho do CodeRabbit (§29–§32): `npm test` no Windows 11 com runtime pinado, 172/172. Cabeçalho do status corrigido de 152 para 172.
+- Novo executor `poc/bench/ac13-windows.ts`: 12/12 extrações (clássico com nome não ASCII, ZIP64 forçado, 65.539 entradas, arquivo > 4 GiB) por `Expand-Archive`, `tar.exe` e `Shell.Application`, com hashes iguais ao manifesto. Dados em `poc/bench/results/ac13-windows-2026-10-19.jsonl`; TEST_PLAN §21, IMPLEMENTATION_STATUS §33.
+- Pendente: abertura manual no Explorador. AC-13 completo, TC e gate V0 não aprovados. Código de produto, contratos e dependências inalterados.
+
 ## 2026-10-19 — S-1 explícito
 
 - Política A aprovada (D-016); mecanismo opcional implementado sem instalar padrão numérico.

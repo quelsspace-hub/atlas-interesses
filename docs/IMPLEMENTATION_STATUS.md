@@ -1,10 +1,10 @@
 # Status real do Atlas
 
-**Atualização registrada:** 19/10/2026 · **Execução mais recente:** 19/10/2026 no sandbox Linux · **Etapa:** PoC local parcial, incluindo backup/restauração, limites D-015 e validação automática de ZIP64 (AC-13; §29).
+**Atualização registrada:** 19/10/2026 · **Execução mais recente:** 19/10/2026 no Windows 11 (§33) · **Etapa:** PoC local parcial, incluindo backup/restauração, limites D-015 e validação automática de ZIP64 (AC-13; §29) e extração pelos componentes do Windows 11 (§33).
 
 ## 1. Situação
 
-**Estado atual:** suíte principal com 152/152 testes aprovados; evidências do AC-13 e limites de plataforma no §29. O aceite completo do AC-13 depende da extração no Windows 11.
+**Estado atual:** suíte principal com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
 
 O estado registrado na consolidação de 18/10/2026 é preservado como proveniência. PoCs delimitadas executadas nos ambientes de 17–18/10 cobrem persistência de um registro, regras D-003/D-004, renomeação de Tag, reconstrução de backlinks, regra pura D-001 e criação de nova permanente em fixture (seção 12). Os recortes não representam entidades completas ou schema V1. Isso não conclui V0, não implementa o aplicativo e não aprova a stack. Tauri 2 + React + TypeScript continua candidata.
 
@@ -42,7 +42,7 @@ As seis regras auditadas estão confirmadas e não são pendências: Item.status
 
 ## 5. Próximo passo
 
-**Atualização de 19/10/2026:** concluir a comprovação de compatibilidade ZIP64 no Windows 11 (§29). Em seguida, propor a composição F-2.v1 para aprovação, medir amostras legítimas comprimíveis e F-3 maliciosas, e submeter o valor S-1 antes de implementar a razão de compressão do AC-07. Inbox depende de Q-01/Q-02/Q-04; nenhuma mudança estrutural dessa etapa foi iniciada. Os parágrafos abaixo preservam a sequência histórica.
+**Atualização (§33, 19/10/2026):** extração Windows automatizada concluída (12/12); restam a abertura manual no Explorador e as decisões listadas no §33. **Atualização anterior de 19/10/2026:** concluir a comprovação de compatibilidade ZIP64 no Windows 11 (§29). Em seguida, propor a composição F-2.v1 para aprovação, medir amostras legítimas comprimíveis e F-3 maliciosas, e submeter o valor S-1 antes de implementar a razão de compressão do AC-07. Inbox depende de Q-01/Q-02/Q-04; nenhuma mudança estrutural dessa etapa foi iniciada. Os parágrafos abaixo preservam a sequência histórica.
 
 Aguardar a revisão da proprietária desta etapa delimitada. Nenhuma etapa adicional, integração nativa ou implementação do aplicativo está autorizada por esta entrega.
 
@@ -545,3 +545,13 @@ A proposta separa requisitos DECIDIDOS/ESPECIFICADOS de recomendações técnica
 **DECIDIDO:** política A (D-016). **VERIFICADO:** filtro por entrada, inclusive manifesto, antes de descompressão; comparação exata BigInt; política copiada antes de callbacks; exportador store simétrico. 172/172 testes e 11/11 casos funcionais ([TEST_PLAN §20](TEST_PLAN.md)).
 
 **PROPOSTO:** candidato 128:1, com recusas legítimas documentadas em PROPOSTA_AC07_LIMITES §6.1. **PENDENTE:** aprovação numérica e ativação padrão; hoje a opção precisa ser explícita. AC-07 permanece parcial. Nenhum aplicativo nativo/GUI criado; pendências Windows/Inbox preservadas.
+
+## 33. AC-13: extração pelos componentes do Windows 11 — 19/10/2026
+
+**Contexto:** retomada após o trabalho registrado nos §29–§32 (feito pelo CodeRabbit em sandbox Linux). Estado recebido conferido: base `54a0cf1`, árvore limpa, `npm test` no Windows 11 com runtime pinado `24.22.0`: 172/172. Executada a pendência PROPOSTA nos §5/§29, sem mudança de produto ou contrato.
+
+- **Implementado:** `poc/bench/ac13-windows.ts`, executor explícito (fora de `npm test`). Exportador, restaurador e dependências não alterados.
+- **VERIFICADO:** 12/12 extrações (clássico com nome não ASCII, ZIP64 forçado, 65.539 entradas, arquivo de 4.294.967.297 bytes) × (`Expand-Archive`, `tar.exe`, `Shell.Application`/zipfldr), com caminhos, tamanhos e SHA-256 iguais ao manifesto. Evidência em [TEST_PLAN §21](TEST_PLAN.md) e `poc/bench/results/ac13-windows-2026-10-19.jsonl`.
+- **PENDENTE:** abertura manual no Explorador do Windows 11 (interação da proprietária). AC-13 completo, TC-13–TC-15 e gate V0 não aprovados. Esta evidência não dá motivo para reabrir DQ-07/Z-B.
+- **Correção de registro:** o cabeçalho e o §1 citavam 152/152; a contagem vigente é 172/172 (§32).
+- **Continua dependendo da proprietária:** valor numérico de S-1 (128:1 proposto, D-016); regras de nomes reservados e finais com espaço ou ponto; Q-01/Q-02/Q-04 para a Inbox; Q-07/Q-08 para a prova nativa.
