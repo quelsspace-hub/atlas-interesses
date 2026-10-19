@@ -99,3 +99,11 @@ Em 18/10/2026, a exportação foi implementada na PoC com yauzl 3.4.0 e yazl 3.3
 ## Manutenção
 
 Ao implementar, adicionar caminho do código, revisão e evidência da execução. Quando um requisito muda, revisar todos os cenários associados. REQ-010/011 não recebem PASS apenas por existência de documentação: dependem de protótipo/app e avaliação. Os cenários estão definidos no [TEST_PLAN.md](TEST_PLAN.md).
+
+## Planejamento de compressão — 19/10/2026
+
+REQ-008 → D-015 / VAULT_CONTRACT §7.5 → S-1 / AC-07 → [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md) e [TEST_PLAN §18](TEST_PLAN.md). Composição apresentada, ainda sem aprovação, geração ou medição. Não altera o aceite parcial do AC-07 ou o estado do AC-13; nenhum TC completo aprovado.
+
+## F-2.v1 executado — 19/10/2026
+
+REQ-008 → D-015 / VAULT_CONTRACT §7.5 → S-1 / AC-07 → [TEST_PLAN §19](TEST_PLAN.md): composição aprovada, gerador/executor em `poc/bench/f2-*.ts`, testes em `poc/test/f2-compression.test.ts`, evidência em [dados](../poc/bench/results/f2-2026-10-19.jsonl) e [resumo](../poc/bench/results/f2-2026-10-19.md). 164/164 testes e 75/75 operações; razão não separa dados legítimos de expansão neste corpus. S-1 continua PENDENTE de decisão; sem TC completo/gate aprovado. Este registro sucede o planejamento acima.

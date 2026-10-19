@@ -125,3 +125,33 @@ A comparação de SHA-256 imediatamente antes de `rename` **não é compare-and-
 - **TC-17:** não executado. Testes de falha Node não representam permissão, ciclo GUI ou I/O nativo.
 
 Nenhum desses subcasos marca um TC completo como aprovado.
+
+## Experimento aprovado F-2.v1 / F-3 para S-1
+
+Composição aprovada em 19/10/2026: [PROPOSTA_F2_V1](../docs/PROPOSTA_F2_V1.md). Gerador `bench/f2-fixture.ts`, ZIP experimental `bench/f2-archive.ts`, worker isolado `bench/f2-worker.ts` e orquestrador `bench/f2-run.ts`. A suíte principal inclui `test/f2-compression.test.ts`. Sem novas dependências e sem mudança no exportador store do produto.
+
+Comandos a partir de `poc/`, após preparar as dependências. Use um nome de saída novo: o executor recusa sobrescrever resultados existentes.
+
+Windows, runtime fixado no projeto:
+
+```powershell
+npm test
+.\node_modules\node-win-x64\bin\node.exe dist/bench/f2-run.js --out bench/results/f2-nova-execucao.jsonl
+.\node_modules\node-win-x64\bin\node.exe dist/bench/f2-run.js --summarize bench/results/f2-nova-execucao.jsonl
+```
+
+Linux, dependências já preparadas:
+
+```bash
+mise exec node@24.22.0 -- npm test
+mise exec node@24.22.0 -- node dist/bench/f2-run.js --out bench/results/f2-nova-execucao.jsonl
+mise exec node@24.22.0 -- node dist/bench/f2-run.js --summarize bench/results/f2-nova-execucao.jsonl
+```
+
+São 75 operações em processos separados: F-2 e expansão F-3 (8/32 × 8 MiB), cada um em store/deflate 1/6/9, mais tamanho falso, hash falso e stream truncado em deflate 6; cinco execuções por cenário. Cada worker tem timeout de 120 s. O laboratório exige 2 GiB livres antes de começar e gera arquivos em pasta temporária exclusiva, removida ao final. Esses controles do experimento não são limites do produto. Uma falha gera saída parcial e código diferente de zero; o resumidor recusa experimentos incompletos, cenários duplicados ou operações com falha.
+
+O stream truncado é simulado limitando a metade o trecho comprimido acessível na entrada, sem remover fisicamente o resto do ZIP. O diretório central permanece acessível. O tamanho falso é coerente entre manifesto e tamanho descompactado central, mas diverge dos bytes reais. Todos entram pelo `restoreBackup` público.
+
+O inventário inclui hashes de arquivo/corpo; duas gerações independentes devem ser iguais. AES-256-CTR usa chave SHA-256 de `semente + NUL + key:rótulo` e IV nos primeiros 16 bytes de SHA-256 de `semente + NUL + iv:rótulo`. UUIDs derivam de `uuid:rótulo`, com bits v4/variante ajustados. PNG usa filtros zero e zlib nível 9; PDF 1.4 usa xref clássico e raster FlateDecode nível 9. Conteúdo e manifesto usam timestamp fixo. O ZIP experimental também informa esse mtime; diferenças de plataforma/metadados não são usadas como identidade do corpus.
+
+Dados brutos e resumo da execução Linux: [JSONL](bench/results/f2-2026-10-19.jsonl) e [resumo](bench/results/f2-2026-10-19.md). Resultados e decisão S-1 em [TEST_PLAN §19](../docs/TEST_PLAN.md). Resultados Linux não validam Windows/NTFS, e a existência do corpus não aprova AC-07.

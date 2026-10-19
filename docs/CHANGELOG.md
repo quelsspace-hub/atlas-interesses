@@ -1,5 +1,16 @@
 # Histórico de mudanças
 
+## 2026-10-19 — F-2.v1 aprovado e experimento executado
+
+- Gerador determinístico e executor F-2/F-3 com store/deflate 1/6/9, processos isolados e registros de memória/tempo/disco por fase. PNG/PDF reais e inventário com hashes de arquivos/corpos.
+- Suíte ampliada: 164/164, código 0; 75/75 operações medidas, incluindo 15 recusas de corrupção antes da confirmação/destino. Dados e resumo em poc/bench/results; TEST_PLAN §19.
+- Sobreposição de razões legítimas e de expansão comprovada; alternativas para S-1 submetidas em PROPOSTA_AC07_LIMITES §6. Contrato, exportador e dependências preservados. AC-07 completo e Windows continuam pendentes.
+
+## 2026-10-19 — Proposta F-2.v1 para revisão
+
+- Composição, reprodutibilidade, protocolo de medição e casos F-3 em PROPOSTA_F2_V1; classificação PROPOSTO, aguardando aprovação antes da geração.
+- Risco de sobreposição entre razões legítimas e de expansão explicitado; nenhum S-1 decidido. Índice e controles atualizados; sem código, amostras ou novas medições.
+
 ## 2026-10-19 — AC-13 automático na PoC; compatibilidade Windows pendente
 
 - Revisadas as opções ZIP64 já existentes; padrão Z-B preservado. Testes leves reforçam estruturas, bytes e recusa de corrupção; novos casos pesados provam promoção por contagem/tamanho, em execução explícita.

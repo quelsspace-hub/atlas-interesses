@@ -111,3 +111,16 @@ O §7.5 proíbe teto derivado de fixture. A proposta, portanto, não fixa valore
 ## 5. Observação lateral
 
 A página *Naming Files* também lista os nomes reservados de dispositivo (como `CON`, `NUL` e `COM1`, inclusive seguidos de extensão) e desaconselha nomes que terminem em espaço ou ponto. A pré-validação atual da PoC não os recusa: num ZIP adulterado, eles falhariam na criação durante a extração, como Falhou, e não na pré-validação. Não fazem parte das categorias de limite do §7.5 e ficam registrados apenas como lacuna para decisão futura.
+
+## 6. Evidência F-2.v1 e decisão S-1 — 19/10/2026
+
+**VERIFICADO na PoC/Linux:** composição aprovada pela proprietária, criada e medida em 75 operações ([TEST_PLAN §19](TEST_PLAN.md)). Zero de 8 MiB legítimo e cada payload de expansão F-3 tiveram os mesmos bytes, hash, método, tamanho comprimido e razão. Máximo legítimo = mínimo de expansão: 229,146853 em deflate 1 e 1.028,393772 em deflate 6/9. O critério vigente de separação não tem intervalo neste corpus. Os limites da D-015, exceto S-1, continuam como estão; nenhuma emenda foi aplicada ao VAULT_CONTRACT.
+
+**PROPOSTAS para decisão da proprietária, sem valor numérico novo:**
+
+| Alternativa | Consequência | Trabalho que exigirá aprovação/medição |
+| --- | --- | --- |
+| A — revisar S-1 como filtro conservador de formato, aceitando que ele possa recusar ZIPs externos legítimos muito comprimíveis | O exportador usa fallback store para entradas acima do futuro valor; arquivos externos recusados exigem nova exportação pela ferramenta de origem. Não prometer distinção entre legítimo e malicioso por razão | Emendar critério 3, decidir tratamento/diagnóstico e medir/certificar um valor. Não deduzir um valor seguro apenas do máximo deste corpus |
+| B — retirar a razão como critério de recusa e avaliar controles de recursos durante a operação | Preserva aceitação de entradas legítimas muito comprimíveis; a razão serve só como diagnóstico. Hashes/contagem de bytes continuam necessários, mas não evitam custo alto de um ZIP coerente | Emendar critério 3 e decidir o comportamento de cancelamento, tempo/memória/espaço e recuperação no backend adequado. Nenhuma garantia de proteção contra exaustão foi demonstrada |
+
+**Recomendação técnica PROPOSTA:** escolher primeiro qual consequência é aceitável. A preserva a direção de fallback store já formalizada, mas precisa aceitar explicitamente a possibilidade de recusa de dados externos legítimos. B exige uma política de recursos ainda não decidida. Não fixar S-1 nem declarar AC-07 completo antes dessa decisão e das provas correspondentes. Essa escolha não é resolvida pela aprovação da composição F-2.v1.

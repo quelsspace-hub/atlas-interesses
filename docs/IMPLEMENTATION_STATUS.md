@@ -521,3 +521,21 @@ A proposta separa requisitos DECIDIDOS/ESPECIFICADOS de recomendações técnica
 - **Conclusão formal delimitada:** implementação e suíte automática do AC-13 concluídas na PoC. **AC-13 completo não aprovado:** validação com extratores do Windows 11 permanece pendente, indisponível neste sandbox Linux. Nenhum TC completo nem gate V0 aprovado.
 - **Invariantes:** nenhuma alterada ou violada. Arquivos Markdown/YAML continuam canônicos, UUIDs e relações mantidos; corpos e anexos preservados byte a byte; backup com manifesto SHA-256 e restauração em pasta nova; OR, D-001 e progresso/null reaplicados pela suíte completa. D-012 respeitada com falhas e bloqueios explícitos.
 - **Próximo passo PROPOSTO:** comprovar a extração Windows; depois submeter F-2.v1 para aprovação e, após ela, medir amostras comprimíveis/F-3 e propor S-1 antes de codificá-lo. Nomes reservados/finais com espaço ou ponto exigem decisão; Inbox depende de Q-01/Q-02/Q-04; prova nativa depende de Q-07/Q-08. Nenhuma dessas implementações foi iniciada.
+
+## 30. Proposta concreta F-2.v1 para revisão
+
+**Data:** 19/10/2026 · **Estado: PROPOSTO.** Continuidade do planejamento após o AC-13 automático, base Git `8606c9d2fb0d94252145a81413c9061b56008d89`.
+
+- Criada [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md): composição de 21 arquivos sintéticos, semente/versionamento, variantes store/deflate, protocolo MP e casos F-3 para investigar S-1.
+- Explicitada a possível sobreposição entre razões de dados legítimos e de expansão. Sem intervalo válido, a evidência deve voltar para decisão; nenhum limite será inventado.
+- Atualizados índice, TEST_PLAN §12.2/§18, OPEN_QUESTIONS, rastreabilidade e CHANGELOG. Código, dependências e contratos não alterados; invariantes preservadas.
+- **PENDENTE:** aprovação da composição antes de gerar amostras e ZIPs de F-3; decisão sobre S-1 após medições. Sem nova execução de testes de software nesta etapa documental; resultados anteriores só são reutilizáveis com os mesmos insumos. Validação Windows do AC-13, decisões nativas/UX e Inbox continuam pendentes. Nenhum gate aprovado.
+
+## 31. F-2.v1 aprovado, criado e medido; S-1 exige decisão
+
+**Data:** 19/10/2026 · **Autorização:** “composição aprovada, pode seguir com a criação”, para a composição/experimentos da PROPOSTA_F2_V1. Aprovação posterior à proposta do §30; não decide S-1.
+
+- **Implementado:** quatro módulos `poc/bench/f2-*.ts` e `poc/test/f2-compression.test.ts`; corpus determinístico com PNG/PDF válidos, relações/UUIDs e cinco registros LF/cinco CRLF; executor com processos isolados, checkpoints e criação exclusiva de saída; limpeza dos temporários próprios. Sem novas dependências ou mudanças no código do produto.
+- **VERIFICADO:** suíte `npm test` (runtime/typecheck/build), **164/164**, código 0; duas gerações idênticas, corpus de 21 arquivos/22.021.291 bytes; **75/75** operações em 15 cenários ×5. Sessenta restaurações com inventário/hash dos corpos iguais e quinze recusas de corrupção antes da confirmação/destino. PNG/PDF também conferidos por Python zlib/pypdf estrito. Comandos, ambiente, hashes e limites em [TEST_PLAN §19](TEST_PLAN.md).
+- **Resultado:** razões legítimas e de expansão iguais (até 1.028,393772 nos níveis 6/9). Não existe intervalo no corpus para o critério vigente de S-1. Alternativas PROPOSTAS em [PROPOSTA_AC07_LIMITES §6](PROPOSTA_AC07_LIMITES.md); requer decisão da proprietária antes de alterar contrato/implementar.
+- **Preservado:** Markdown/YAML canônico, UUID v4, OR por tags, D-001, corpo Markdown, progresso/null, manifesto SHA-256 e restauração em pasta nova; D-012 respeitada. Sem código nativo/V1, limite S-1 ou gate aprovado. Validação Windows do AC-13 permanece pendente.

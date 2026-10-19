@@ -19,7 +19,7 @@
 
 **VERIFICADO:** AC-13 automático na PoC Node/Linux, com evidências em [TEST_PLAN §17](TEST_PLAN.md) e [IMPLEMENTATION_STATUS §29](IMPLEMENTATION_STATUS.md). Compatibilidade com os extratores do Windows 11 continua pendente; não encerra Q-05 nem Q-07. As linhas datadas de 18/10 acima preservam o histórico.
 
-**Próximo incremento PROPOSTO:** submeter a composição F-2.v1 (semente, Markdown LF/CRLF, anexos já comprimidos e amostras muito comprimíveis). Após aprovação, construir as amostras e os ZIPs maliciosos de F-3, medir as razões, propor S-1 e obter a decisão antes de codificar esse limite. Nenhum valor novo ou schema foi decidido. Regras de nomes reservados e finais com espaço/ponto também exigem decisão. Inbox permanece dependente de Q-01/Q-02/Q-04; prova nativa depende de Q-07/Q-08.
+**Atualização — composição aprovada e executada:** a proprietária aprovou a [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md). Corpus criado e medido na PoC/Linux: 164/164 testes e 75/75 operações ([TEST_PLAN §19](TEST_PLAN.md)). Razões legítimas e de expansão coincidiram; não existe intervalo observado para o critério vigente de S-1. **Próxima decisão PENDENTE:** rever esse critério e escolher a política de proteção conforme [PROPOSTA_AC07_LIMITES §6](PROPOSTA_AC07_LIMITES.md), antes de codificar um limite. AC-07 permanece parcial. Regras de nomes reservados e finais com espaço/ponto também exigem decisão. Inbox permanece dependente de Q-01/Q-02/Q-04; prova nativa depende de Q-07/Q-08.
 
 ## Lacunas anteriores resolvidas documentalmente
 

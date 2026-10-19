@@ -202,7 +202,7 @@ Windows 11 x64 em NTFS é a plataforma prioritária para desenvolver e validar a
 | Fixture | Finalidade | Composição | Estado |
 | --- | --- | --- | --- |
 | F-1 funcional | AC-01–AC-11, AC-14–AC-17 | Poucas dezenas de arquivos: todos os tipos de registro, arquivados, CRLF/LF, Unicode e nomes que diferem só por caixa, anexos binários em `assets/` com subpasta, `settings.yml`, arquivos de sistema, uma pasta vazia, um arquivo não canônico, uma pasta de cache de outra ferramenta (não canônica), um `.tmp-{UUID}.md` órfão; variantes com `.txn_*`, junção e symlink | Composição aprovada; atualizada no bloco 2 (D-014, DQ-13, DQ-15); não construída |
-| F-2 referência | Comparação de medições entre versões | Conjunto **sintético**, reproduzível (gerador com semente registrada) e versionado (F-2.vN), com proporção de Markdown e anexos já comprimidos (PDF, imagem), incluindo amostras muito comprimíveis. Não representa nem limita o volume futuro do Atlas. A composição de F-2.v1 é proposta após a primeira rodada exploratória e aprovada pela proprietária; versões novas não invalidam as anteriores | **Modelo progressivo decidido (DQ-03, bloco 2).** F-2.v1 ainda não proposto nem aprovado. Não construída |
+| F-2 referência | Comparação de medições entre versões | Conjunto **sintético**, reproduzível (gerador com semente registrada) e versionado (F-2.vN), com proporção de Markdown e anexos já comprimidos (PDF, imagem), incluindo amostras muito comprimíveis. Não representa nem limita o volume futuro do Atlas. A composição de F-2.v1 é proposta após a primeira rodada exploratória e aprovada pela proprietária; versões novas não invalidam as anteriores | **Modelo progressivo decidido (DQ-03, bloco 2).** Composição aprovada pela proprietária em 19/10/2026 em [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md); construída e medida na PoC/Linux (§19). S-1 continua pendente |
 | F-3 estresse | Capacidade, limites de segurança e ZIP64 | Gerada no temporário, em degraus crescentes que variam separadamente o número de arquivos e o tamanho de arquivos individuais, registrando tempo, memória e disco por degrau (MP), até falha controlada ou limitação técnica real do ambiente. Inclui ao menos um caso acima de 65.535 entradas e um arquivo acima de 4 GiB, ou ZIP64 forçado pela biblioteca quando o tamanho real for inviável, e ZIPs maliciosos de expansão e de cabeçalho falso | Composição aprovada; degraus acrescentados no bloco 2 (DQ-03). Em 18/10/2026, os degraus do AC-19 foram gerados por `poc/bench/ac19-fixture.ts` (§15); o caso de ZIP64 e os ZIPs maliciosos de expansão e de cabeçalho falso não foram construídos |
 
 *Emenda de 18/10/2026 (bloco 2, DQ-03).* Redação anterior, preservada:
@@ -498,3 +498,50 @@ Os testes pesados usam o gerador/seed `atlas-ac19-v1` para a base. O arquivo gra
 **BLOQUEADO no sandbox Linux:** extração por `Shell.Application`/zipfldr, `tar.exe`, `Expand-Archive` e abertura manual no Explorador do Windows 11. Nenhum resultado dessas ferramentas foi inferido da leitura Node. Registrar extração e hashes separadamente na plataforma prioritária; incompatibilidade inaceitável reabre DQ-07, conforme VAULT_CONTRACT §7.5.
 
 Próximo incremento **PROPOSTO**, antes de editar código estrutural: aprovar a composição F-2.v1; depois gerar amostras comprimíveis legítimas e F-3 maliciosas, medir razões e propor S-1 para decisão. Só após essa decisão implementar a razão de compressão do AC-07. Inbox depende das decisões Q-01/Q-02/Q-04; regras de nomes e prova nativa continuam com as dependências do relatório de 18/10, item 6.
+
+## 18. Planejamento de F-2.v1 e S-1 — 19/10/2026
+
+**PROPOSTO:** [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md) detalha 21 arquivos sintéticos, variantes store/deflate, casos F-3 e o tratamento da possível sobreposição entre razões legítimas e de expansão. Não houve geração, medição ou aprovação da composição. O critério vigente do VAULT_CONTRACT §7.5 não mudou. A tabela §12.2 foi atualizada apenas quanto à existência da proposta; as notas históricas descrevem suas respectivas datas.
+
+## 19. F-2.v1 e F-3: medições para S-1 — 19/10/2026
+
+**DECIDIDO:** composição e experimentos das seções 2–5 da [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md), aprovados pela proprietária com “composição aprovada, pode seguir com a criação”. Não aprova um valor de S-1, mudança de contrato ou stack nativa.
+
+**Implementação:** `poc/bench/f2-fixture.ts`, `f2-archive.ts`, `f2-worker.ts`, `f2-run.ts` e `poc/test/f2-compression.test.ts`. Gerador exige raiz nova; saída do executor usa criação exclusiva; geração e artefatos de cada medição ficam no temporário exclusivo e são removidos ao final. Exportador de produção e dependências preservados.
+
+### 19.1 Ambiente e reprodução
+
+Ubuntu 26.04.1 x64, kernel 6.18.49, CPU Intel Xeon 2,90 GHz, 4 CPUs lógicas, 8.812.408.832 bytes de RAM visível; filesystem tipo `1481003842` (overlayfs). Node `24.22.0`, zlib `1.3.2.1-motley-285e94b`, OpenSSL `3.5.8`, yazl `3.3.1`, yauzl `3.4.0`, yaml `2.9.1`. Base Git `8606c9d2fb0d94252145a81413c9061b56008d89`, com alterações locais identificadas por SHA-256 em `sourceHashes` do JSONL. Antivírus/energia não medidos no sandbox; cache frio não comprovado. Cada operação roda em processo novo, com timeout de 120 s, amostragem de memória a cada 5 ms e maxRSS do processo. External e arrayBuffers são registrados separadamente. Gerador e processos de controle não integram o maxRSS do worker.
+
+Comandos realmente executados (em `poc/`, exceto `--prefix poc` a partir da raiz):
+
+```bash
+mise exec node@24.22.0 -- npm test --prefix poc
+mise exec node@24.22.0 -- node dist/bench/f2-run.js --out bench/results/f2-2026-10-19.jsonl
+mise exec node@24.22.0 -- node dist/bench/f2-run.js --summarize bench/results/f2-2026-10-19.jsonl
+```
+
+Os três comandos terminaram com código 0. Suíte ampliada: **164/164**, zero falhas/pulados. O teste de identidade fixa o hash F-2.v1 abaixo; futuras alterações de bytes exigem revisão da versão. Após a medição foram acrescentadas a asserção de identidade e a recusa de resumos parciais/duplicados/com falhas, com testes. Nenhum gerador, compressor, worker ou laço de medição foi alterado nesse intervalo; os hashes dos insumos medidos permanecem no JSONL. Instruções Windows com runtime fixado em [poc/README](../poc/README.md); não executadas aqui.
+
+### 19.2 Corpus e resultados observados
+
+- Duas gerações em pastas diferentes produziram inventários idênticos: **21 arquivos, 22.021.291 bytes**, mais o manifesto no ZIP (22 entradas).
+- Identidade do inventário ordenado de caminho/tamanho/hash, incluindo hash dos corpos: `5e22d0a099e2ed05a793d9600d2cfe6687fd668ed2434c6de655b6d2f384b16a`.
+- PNG: 196.992 bytes, SHA-256 `cbe66b4fc363e667ec7293a727574844e40614a7556f4108fdaad17dfa0bac62`; PDF: 197.367 bytes, SHA-256 `c23aca7ef4ff663cfa854ec6079062e7617297ee53eed5bc9856639b5b95a4f4`. Além dos testes TS, Python zlib conferiu CRCs/scanlines do PNG e pypdf 6.21.1 leu o PDF em modo estrito (1 página, raster RGB 256 × 256).
+- **75/75 operações:** 15 cenários × 5 execuções. F-2 e F-3 expansão 8/32 × 8 MiB em store/deflate 1/6/9 (60 restaurações verificadas com inventário de arquivos/corpos idêntico); tamanho falso, hash falso e deflate truncado no nível 6 (15 recusas seguras).
+- Todas as corrupções falharam em `pre-validation`, sem confirmação, destino criado ou disponibilização de cópia. Tamanho falso mantém manifesto/diretório central coerentes entre si; a contagem real falha. Stream truncado usa metade do payload comprimido acessível, preservando fisicamente o restante do ZIP e o diretório central.
+
+| Método/nível | Máximo legítimo (inclui manifesto) | Mínimo dos payloads F-3 de expansão | Comparação dos zeros de 8 MiB |
+| --- | ---: | ---: | --- |
+| store | 1,000000 | 1,000000 | Mesmos U/C/hash/método |
+| deflate 1 | 229,146853 | 229,146853 | Mesmos U/C/hash/método |
+| deflate 6 | 1.028,393772 | 1.028,393772 | Mesmos U/C/hash/método |
+| deflate 9 | 1.028,393772 | 1.028,393772 | Mesmos U/C/hash/método |
+
+Razão por entrada = bytes descompactados reais / payload comprimido, sem cabeçalhos; vazios têm razão não aplicável. [Dados brutos](../poc/bench/results/f2-2026-10-19.jsonl) e [resumo por cenário/fase](../poc/bench/results/f2-2026-10-19.md) registram primeira execução, mediana/máximo das seguintes, memória, hashes e disco. `logicalPeakBytes` mede ZIP + cópia restaurada, sem incluir fonte, diário/metadados; espaço livre observado inclui ruído de outros processos. Não houve medição de reindexação completa de aplicativo.
+
+### 19.3 Consequência e pendências
+
+**VERIFICADO neste corpus:** não há intervalo acima do máximo legítimo e abaixo das razões de expansão para satisfazer o critério 3 vigente de VAULT_CONTRACT §7.5. Bytes iguais sob os mesmos parâmetros comprimem igual, independentemente de intenção; repetir entradas aumenta custo total sem mudar a razão individual.
+
+**PENDENTE:** decisão sobre a revisão desse critério e a política S-1, com alternativas em [PROPOSTA_AC07_LIMITES §6](PROPOSTA_AC07_LIMITES.md). Nenhum limiar foi inventado ou codificado. Os limites já existentes e o exportador store permanecem vigentes. AC-07 completo, Windows/NTFS, TC-21 e gate V0 não aprovados. Nomes reservados, stack/UX e Inbox continuam com suas decisões próprias.
