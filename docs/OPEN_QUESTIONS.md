@@ -15,6 +15,12 @@
 | Q-09 | Acessibilidade dos tokens e bibliotecas | Usar cores do PDF; ajustar combinações somente com decisão registrada. Fechar ícones, fontes distribuídas e modo automático do SO. | Antes de aceite visual |
 | Q-10 | Política de configuração e migração | settings.yml e assets são complementos propostos; distinguir preferência do dispositivo de configuração portátil. Definir schema futuro e edição externa.<br>**Parcialmente decidida em 18/10/2026 (D-014; DQ-10 a DQ-15):**<br>- `assets/` e o `settings.yml` opcional são conteúdo canônico;<br>- o `settings.yml` tem `settings_version` e chaves aprovadas individualmente;<br>- a configuração do dispositivo, o tema, os caches e os índices ficam fora do vault;<br>- a versão do schema é derivada dos registros ([DATA_MODEL §2.1](DATA_MODEL.md)).<br>**Continuam abertos:** lista de chaves portáteis; política de entrada de anexos (formatos, tamanhos, nomes); schema futuro; edição externa.<br>**Atualização pós-auditoria (18/10/2026):** versões não suportadas bloqueiam a exportação e a restauração, sem migração automática (A-10). A política de migração continua aberta. | Antes de persistir configurações |
 
+## Atualização de execução — 19/10/2026
+
+**VERIFICADO:** AC-13 automático na PoC Node/Linux, com evidências em [TEST_PLAN §17](TEST_PLAN.md) e [IMPLEMENTATION_STATUS §29](IMPLEMENTATION_STATUS.md). Compatibilidade com os extratores do Windows 11 continua pendente; não encerra Q-05 nem Q-07. As linhas datadas de 18/10 acima preservam o histórico.
+
+**Próximo incremento PROPOSTO:** submeter a composição F-2.v1 (semente, Markdown LF/CRLF, anexos já comprimidos e amostras muito comprimíveis). Após aprovação, construir as amostras e os ZIPs maliciosos de F-3, medir as razões, propor S-1 e obter a decisão antes de codificar esse limite. Nenhum valor novo ou schema foi decidido. Regras de nomes reservados e finais com espaço/ponto também exigem decisão. Inbox permanece dependente de Q-01/Q-02/Q-04; prova nativa depende de Q-07/Q-08.
+
 ## Lacunas anteriores resolvidas documentalmente
 
 - Caminhos, campos legíveis, regra de reading e estados da Inbox foram fornecidos pela proprietária.

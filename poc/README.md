@@ -77,6 +77,30 @@ npm test
 
 `npm ci` precisa de Node/npm capaz de executar o instalador. Após a instalação local, `npm test` verifica o Node pinado, executa TypeScript em modo estrito, compila e roda os testes nativos do Node. A saída documentada em [IMPLEMENTATION_STATUS.md](../docs/IMPLEMENTATION_STATUS.md) registra os comandos realmente executados.
 
+## ZIP64 — AC-13 (19/10/2026)
+
+`npm test` inclui os três cenários ZIP64 leves (clássico, forçado/restaurado e adulterado) e recusas por permissões injetadas. `forceZip64` é uma opção experimental de teste em `exportBackup`; o padrão continua Z-B, com promoção automática só quando necessária.
+
+Os casos reais de mais de 65.535 entradas e de um arquivo acima de 4 GiB são executados separadamente, com disco disponível para o ZIP e a restauração (mais de 8 GiB no caso grande):
+
+```powershell
+npm run build
+$env:ATLAS_AC13_HEAVY = '1'
+.\node_modules\node-win-x64\bin\node.exe --test --test-reporter=tap --test-concurrency=1 dist/test/heavy/ac13-heavy.test.js
+Remove-Item Env:ATLAS_AC13_HEAVY
+```
+
+No Linux, com as dependências já preparadas e Node 24.22.0 via mise:
+
+```bash
+mise exec node@24.22.0 -- npm test
+ATLAS_AC13_HEAVY=1 mise exec node@24.22.0 -- node --test --test-reporter=tap --test-concurrency=1 dist/test/heavy/ac13-heavy.test.js
+```
+
+O manifesto/lockfile do repositório fixa `node-win-x64` e `npm ci` direto não é um procedimento Linux. Nesta validação foram usadas cópias temporárias dos dois arquivos removendo somente esse pacote e sua entrada do lock; `npm ci --prefix /tmp/atlas-poc-deps --no-audit --no-fund` instalou as demais dependências, e `node_modules` foi movido para `poc/`. Os arquivos rastreados permaneceram intactos. npm observado: 11.19.1, diferente do histórico Windows 10.8.2.
+
+Evidência e limites: [TEST_PLAN §17](../docs/TEST_PLAN.md) e [IMPLEMENTATION_STATUS §29](../docs/IMPLEMENTATION_STATUS.md). A extração pelos componentes do Windows 11 continua pendente. Validar no Node/Linux não aprova essa compatibilidade nem o AC-13 completo.
+
 ## Limites da escrita
 
 O adapter cria destinos com abertura exclusiva (`wx`), não com consulta prévia de existência. Para editar, calcula a revisão SHA-256 lida, grava e sincroniza um temporário ao lado do destino, relê o original imediatamente antes de `rename`, compara a revisão e confere o conteúdo persistido depois do rename. Conflitos preservam os bytes externos e carregam o rascunho local e hashes no diagnóstico. A limpeza só remove um temporário depois de a abertura exclusiva o criar; erro `EEXIST` não remove o arquivo alheio. Falha após possível substituição resulta em estado incerto; não há rollback automático.

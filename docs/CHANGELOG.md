@@ -1,5 +1,11 @@
 # Histórico de mudanças
 
+## 2026-10-19 — AC-13 automático na PoC; compatibilidade Windows pendente
+
+- Revisadas as opções ZIP64 já existentes; padrão Z-B preservado. Testes leves reforçam estruturas, bytes e recusa de corrupção; novos casos pesados provam promoção por contagem/tamanho, em execução explícita.
+- Suíte principal: runtime 24.22.0, typecheck/build e 152/152 testes aprovados no Linux. EACCES/EPERM sintéticos e EACCES POSIX real exercitados. Ajustada a expectativa de caminho Windows na regressão Linux.
+- Evidências e limitações em TEST_PLAN §17 e IMPLEMENTATION_STATUS §29; estados atualizados em VAULT_CONTRACT, OPEN_QUESTIONS e rastreabilidade; comandos em poc/README. Manifests/lockfiles e contratos de produto preservados. Extração Windows pendente; nenhum TC completo ou gate V0 aprovado.
+
 ## 2026-10-18 — Incremento 4 da PoC: limites da D-015 e AC-07
 
 - **Código:** `poc/src/backup/manifest.ts`, `verify-archive.ts`, `inventory.ts`, `export.ts` e `restore.ts`: teto do manifesto, caracteres de controle, comprimento, segmento e profundidade de caminho, espaço livre na exportação e caminho absoluto no destino. A razão de compressão não foi implementada.
