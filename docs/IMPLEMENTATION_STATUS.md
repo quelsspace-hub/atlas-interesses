@@ -4,7 +4,7 @@
 
 ## 1. Situação
 
-**Estado atual (§39):** V5 para Windows (sync por pasta, conflitos recuperáveis, backup automático, segurança, D-031) implementada; Android pendente; testes 171/171, E2E 13/13 no build e no executável empacotado. **Antes (§38):** V4 (grafo de conhecimento, D-030) implementada; testes 166/166 e E2E 12/12. **Antes (§37):** V3 (mapa visual, D-029) implementada; testes 163/163 e E2E 11/11. **Antes (§36):** V2 (busca global e catálogo de fontes, D-028) implementada; testes 160/160 e E2E 10/10. **Antes (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
+**Estado atual (§39–§40):** V5 para Windows (sync por pasta, conflitos recuperáveis, backup automático, segurança, D-031) implementada; Android pendente; revisões do CodeRabbit nas PRs #6 a #8 aplicadas (§40). **Antes (§38):** V4 (grafo de conhecimento, D-030) implementada; testes 166/166 e E2E 12/12. **Antes (§37):** V3 (mapa visual, D-029) implementada; testes 163/163 e E2E 11/11. **Antes (§36):** V2 (busca global e catálogo de fontes, D-028) implementada; testes 160/160 e E2E 10/10. **Antes (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
 
 O estado registrado na consolidação de 18/10/2026 é preservado como proveniência. PoCs delimitadas executadas nos ambientes de 17–18/10 cobrem persistência de um registro, regras D-003/D-004, renomeação de Tag, reconstrução de backlinks, regra pura D-001 e criação de nova permanente em fixture (seção 12). Os recortes não representam entidades completas ou schema V1. Isso não conclui V0, não implementa o aplicativo e não aprova a stack. Tauri 2 + React + TypeScript continua candidata.
 
@@ -753,3 +753,27 @@ Comandos executados em `app/`. Resultados detalhados em [TEST_PLAN §22](TEST_PL
   - E2E do backup automático pela interface: a escolha da pasta usa diálogo nativo; o motor está coberto pelos testes do serviço;
   - aceite humano da V1 à V5.
 - **Roadmap:** V1 a V5 implementadas no Windows, exceto o Android da V5. Gates e aceite dependem da proprietária (D-012).
+
+## 40. Revisões do CodeRabbit nas PRs #6, #7 e #8 — 19/10/2026
+
+Todos os comentários foram conferidos no código atual e estavam procedentes. Cada correção foi feita na branch onde o código nasceu e propagada por merge até `feat/v5-sync`.
+
+| PR | Problema | Correção | Teste |
+| --- | --- | --- | --- |
+| #6 / #7 | Termo com aspas soltas (`design"`) procurava a aspa literal | Aspas removidas de termos fora de frase | `search.test.ts` |
+| #8 | “Incluir arquivados” sozinho não executava a busca | Passa a contar como filtro | Revisão de código |
+| #7 | Conjuntos diferentes de grupos com a mesma média angular sobrepunham itens no mapa | Arcos ocupados registrados; o conjunto seguinte é empurrado para fora | Novo caso em `map.test.ts` (4 grupos; {A,C}, {A,B,C}, {B,D}) |
+| #7 / #8 | Vista do mapa e do grafo herdava filtros e seleção de outro vault | Vista guardada por vault | Revisão de código |
+| #7 | Histórico de navegação dependia de ref atualizada antes do commit | Reducer puro único para rota e histórico | E2E (Voltar ao mapa preserva o contexto) |
+| #7 / #8 | Roda do mouse rolava a página junto com o zoom; gesto horizontal afastava | Listener não passivo com `preventDefault`; `deltaY` 0 ignorado | Revisão de código |
+| #8 | Explicação de grupo quebrava a tela com tag ausente do índice | Cita “tag ausente {UUID}” | Novo caso em `graph.test.ts` |
+| #8 | Linha 3 do roadmap ainda dizia que nada estava implementado | Atualizada, com a redação anterior preservada | — |
+
+**Resultados por branch, em `app/`:**
+
+| Branch | `npm test` | E2E |
+| --- | --- | --- |
+| `feat/v2-search` | 160/160 | — |
+| `feat/v3-map` | 164/164 | 11/11 |
+| `feat/v4-graph` | 167/167 | 12/12 |
+| `feat/v5-sync` | 172/172 | 13/13 |
