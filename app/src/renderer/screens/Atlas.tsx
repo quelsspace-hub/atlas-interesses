@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { groupItems, groupNotes, itemGroups, ungroupedItems, type RecordView } from '../../domain/derive.js'
 import { ITEM_STATUSES, ITEM_TYPES, LABELS, defaultProgressMode, type Item, type ItemStatus, type ItemType } from '../../domain/model.js'
 import { useAtlas } from '../state.js'
-import { Button, Empty, ItemProgress, MarkdownView, Modal, SelectField, StatusBadge, TagList, TagPicker, TextField, entries, routeFor } from '../ui.js'
+import { BackButton, Button, Empty, ItemProgress, MarkdownView, Modal, SelectField, StatusBadge, TagList, TagPicker, TextField, entries, routeFor } from '../ui.js'
 
 export function NewItemDialog({ onClose, presetType, presetTags = [] }: { onClose: () => void; presetType?: ItemType; presetTags?: string[] }) {
   const { create, navigate } = useAtlas()
@@ -152,7 +152,7 @@ export function GroupScreen({ id }: { id: string }) {
     <div className="page">
       <div className="page-head">
         <div>
-          <Button kind="ghost" small onClick={() => navigate({ screen: 'atlas' })}>← Atlas</Button>
+          <BackButton fallback={{ screen: 'atlas' }} />
           <h1>{group.metadata.title}</h1>
           {group.metadata.description && <p className="muted">{group.metadata.description}</p>}
           <div className="row" style={{ marginTop: 8 }}><span className="body-s muted">Tags do grupo:</span><TagList ids={group.metadata.tag_ids} /></div>

@@ -181,6 +181,33 @@ textarea.editor { min-height: 360px; font-family: 'Cascadia Mono', Consolas, ui-
 .markdown blockquote { margin: 0; padding-left: 12px; border-left: 3px solid var(--border); color: var(--text-muted); }
 .markdown a.broken { color: var(--danger); text-decoration: line-through; }
 .markdown img { max-width: 100%; }
+/* Mapa V3 (D-029) */
+.map-wrap { position: relative; }
+.map-canvas { position: relative; height: calc(100vh - 300px); min-height: 420px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface-raised); overflow: hidden; touch-action: none; cursor: grab; }
+.map-canvas:active { cursor: grabbing; }
+.map-canvas svg { display: block; }
+.map-toolbar { position: absolute; top: 10px; left: 10px; z-index: 2; display: flex; gap: 6px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-s); padding: 4px 8px; }
+.map-panel { position: absolute; top: 10px; right: 10px; z-index: 2; width: 280px; display: flex; flex-direction: column; gap: 8px; }
+.map-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-muted); pointer-events: none; }
+.map-edge { stroke: var(--border); stroke-width: 1.5; }
+.map-edge.hub { stroke-width: 2.5; }
+.map-edge.context { stroke-dasharray: 4 4; }
+.map-edge.on { stroke: var(--primary); stroke-width: 2.5; }
+:root[data-theme='dark'] .map-edge.on { stroke: var(--primary-hover); }
+.map-edge.dim, .map-node.dim { opacity: 0.25; }
+.map-node { cursor: pointer; }
+.map-node:focus { outline: none; }
+.map-node:focus-visible .node-shape, .map-node.selected .node-shape { stroke: var(--focus); stroke-width: 4; }
+.map-node .node-shape { fill: var(--surface); stroke: var(--text-muted); stroke-width: 2; }
+.map-node.group .node-shape { fill: var(--surface-sunken); stroke: var(--primary); stroke-width: 3; }
+.map-node.ungrouped .node-shape { stroke-dasharray: 6 4; }
+.map-node.note .node-shape { fill: var(--surface-sunken); }
+.map-node.archived .node-shape { stroke-dasharray: 3 3; opacity: 0.7; }
+.map-node .hub-shape { fill: var(--primary); }
+.map-node .hub-label { fill: var(--on-primary); font-weight: 700; font-size: 15px; letter-spacing: 0.08em; }
+.map-node .node-mark { fill: var(--text); font-size: 12px; font-weight: 700; pointer-events: none; }
+.map-node .node-label { fill: var(--text); font-size: 13px; pointer-events: none; paint-order: stroke; stroke: var(--surface-raised); stroke-width: 4px; }
+.map-node .node-label.group, .map-node .node-label.ungrouped { font-weight: 600; font-size: 15px; }
 mark { background: color-mix(in srgb, var(--primary) 22%, transparent); color: inherit; border-radius: 3px; padding: 0 2px; }
 details > summary { list-style-position: inside; }
 .compare { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-m); }

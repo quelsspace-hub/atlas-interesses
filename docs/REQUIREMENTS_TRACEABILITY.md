@@ -140,3 +140,11 @@ REQ-008 → D-015 / VAULT_CONTRACT §7.5 → S-1 / AC-07 → [TEST_PLAN §19](TE
 | --- | --- | --- | --- |
 | Roadmap V2: busca global no corpo e nos metadados, filtros combináveis, índice descartável (D-011, D-028) | `src/domain/search.ts`, `screens/Search.tsx` | `search.test.ts`; E2E jornada 8 | VERIFICADO; usabilidade pendente |
 | Catálogo de fontes, “se necessário” (D-028) | `sourceCatalog` derivado de `source_*` | `search.test.ts`; E2E jornada 8 | VERIFICADO; entidade `Source` adiada |
+
+## V3 — 19/10/2026
+
+| Requisito / decisão | Implementação | Evidência | Estado |
+| --- | --- | --- | --- |
+| Roadmap V3: mapa sobre entidades existentes, zoom/pan, filtros (D-010, D-029) | `src/domain/map.ts`, `screens/Map.tsx` | `map.test.ts`; E2E jornada 9 | VERIFICADO; usabilidade pendente |
+| Retorno ao contexto (D-029) | Histórico em `state.tsx`, `BackButton`, vista preservada | E2E jornada 9 (zoom e seleção mantidos) | VERIFICADO |
+| Gate V3: dados íntegros e alternativa em listas | Mapa somente leitura; `mapOutline` | E2E (hash do vault igual); teste de equivalência com a lista | VERIFICADO |

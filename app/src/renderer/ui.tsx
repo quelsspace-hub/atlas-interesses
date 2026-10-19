@@ -112,6 +112,15 @@ export function Modal({ title, onClose, children, actions, wide }: { title: stri
   )
 }
 
+const SCREEN_LABEL: Record<string, string> = { overview: 'Visão geral', inbox: 'Inbox', atlas: 'Atlas', projects: 'Projetos', group: 'Grupo', item: 'Item', tasks: 'Tarefas', notes: 'Notas', note: 'Nota', organization: 'Organização', search: 'Busca', map: 'Mapa', settings: 'Configurações' }
+
+// Volta à tela anterior (retorno ao contexto, D-029); sem histórico, vai para `fallback`.
+export function BackButton({ fallback }: { fallback: Route }) {
+  const { goBack, previous } = useAtlas()
+  const target = previous ?? fallback
+  return <Button kind="ghost" small onClick={() => goBack(fallback)}>← {SCREEN_LABEL[target.screen] ?? 'Voltar'}</Button>
+}
+
 export function Empty({ children }: { children: ReactNode }) {
   return <div className="empty">{children}</div>
 }

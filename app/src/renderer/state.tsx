@@ -1,9 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react'
 import { buildIndex, type RecordView, type VaultIndex } from '../domain/derive.js'
 import type { EntityKind } from '../domain/model.js'
 import type { ApiError, AppState, ConversionOutput, Result, VaultSnapshot } from '../shared/api.js'
 
-export type Screen = 'overview' | 'inbox' | 'atlas' | 'projects' | 'group' | 'item' | 'tasks' | 'notes' | 'note' | 'organization' | 'search' | 'settings'
+export type Screen = 'overview' | 'inbox' | 'atlas' | 'projects' | 'group' | 'item' | 'tasks' | 'notes' | 'note' | 'organization' | 'search' | 'map' | 'settings'
 export interface Route { screen: Screen; id?: string }
 
 interface Toast { id: number; kind: 'info' | 'error'; text: string }
@@ -18,6 +18,9 @@ interface Ctx {
   reload: () => Promise<void>
   route: Route
   navigate: (r: Route) => void
+  // Retorno ao contexto (D-029): volta à tela anterior, que restaura o próprio estado (ex.: zoom do mapa).
+  goBack: (fallback: Route) => void
+  previous: Route | null
   toast: (text: string, kind?: Toast['kind']) => void
   run: <T>(promise: Promise<Result<T>>, okText?: string) => Promise<T | null>
   create: (kind: EntityKind, metadata: Record<string, unknown>, body?: string, okText?: string) => Promise<RecordView | null>
@@ -28,6 +31,27 @@ interface Ctx {
 }
 
 const Context = createContext<Ctx | null>(null)
+
+// Rota e histórico mudam juntos num reducer puro (retorno ao contexto, D-029): Voltar só leva a rotas
+// que foram exibidas, mesmo com navegações em sequência rápida.
+interface Navigation { route: Route; history: Route[] }
+type NavAction = { type: 'navigate'; route: Route } | { type: 'back'; fallback: Route } | { type: 'reset' }
+const HOME: Navigation = { route: { screen: 'overview' }, history: [] }
+
+export function navigationReducer(state: Navigation, action: NavAction): Navigation {
+  switch (action.type) {
+    case 'navigate': {
+      const same = state.route.screen === action.route.screen && state.route.id === action.route.id
+      return { route: action.route, history: same ? state.history : [...state.history.slice(-49), state.route] }
+    }
+    case 'back': {
+      const previous = state.history[state.history.length - 1]
+      return { route: previous ?? action.fallback, history: state.history.slice(0, -1) }
+    }
+    case 'reset':
+      return HOME
+  }
+}
 
 export function useAtlas(): Ctx {
   const ctx = useContext(Context)
@@ -46,7 +70,7 @@ export function errorText(error: ApiError): string {
 export function AtlasProvider({ initial, children, renderPending }: { initial: AppState; children: ReactNode; renderPending: (pending: { entries: DirtyEntry[]; resolve: (choice: 'save' | 'discard' | 'cancel') => void } | null) => ReactNode }) {
   const [app, setApp] = useState(initial)
   const [snapshot, setSnapshot] = useState<VaultSnapshot | null>(null)
-  const [route, setRoute] = useState<Route>({ screen: 'overview' })
+  const [{ route, history }, dispatch] = useReducer(navigationReducer, HOME)
   const [toasts, setToasts] = useState<Toast[]>([])
   const dirty = useRef(new Map<string, DirtyEntry>())
   const [pending, setPending] = useState<{ entries: DirtyEntry[]; resolve: (c: 'save' | 'discard' | 'cancel') => void } | null>(null)
@@ -74,7 +98,7 @@ export function AtlasProvider({ initial, children, renderPending }: { initial: A
   useEffect(() => {
     dirty.current.clear()
     setSnapshot(null)
-    setRoute({ screen: 'overview' })
+    dispatch({ type: 'reset' })
     if (app.vaultPath) void reload()
   }, [app.vaultPath, reload])
 
@@ -127,14 +151,16 @@ export function AtlasProvider({ initial, children, renderPending }: { initial: A
     })
   }, [askPending])
 
-  const navigate = useCallback((next: Route) => confirmDiscard(() => setRoute(next)), [confirmDiscard])
+  const navigate = useCallback((next: Route) => confirmDiscard(() => dispatch({ type: 'navigate', route: next })), [confirmDiscard])
+  const goBack = useCallback((fallback: Route) => confirmDiscard(() => dispatch({ type: 'back', fallback })), [confirmDiscard])
+  const previous = history[history.length - 1] ?? null
 
   // D-025: fechar a janela com alterações pendentes pergunta Salvar / Descartar / Cancelar.
   useEffect(() => window.atlas.onCloseRequested(() => confirmDiscard(() => void window.atlas.confirmClose())), [confirmDiscard])
 
   const index = useMemo(() => (snapshot ? buildIndex(snapshot.records) : null), [snapshot])
 
-  const value: Ctx = { app, setApp, snapshot, index, reload, route, navigate, toast, run, create, update, convert, setDirty, confirmDiscard }
+  const value: Ctx = { app, setApp, snapshot, index, reload, route, navigate, goBack, previous, toast, run, create, update, convert, setDirty, confirmDiscard }
   return (
     <Context.Provider value={value}>
       {children}
