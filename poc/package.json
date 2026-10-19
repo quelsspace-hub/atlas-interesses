@@ -1,0 +1,25 @@
+{
+  "name": "atlas-persistence-poc",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@10.8.2",
+  "scripts": {
+    "runtime": "node --version",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "test": "npm run runtime && npm run typecheck && npm run build && node --test \"dist/test/*.test.js\""
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/yauzl": "3.4.0",
+    "@types/yazl": "3.3.1",
+    "node-win-x64": "24.22.0",
+    "typescript": "7.0.2",
+    "yaml": "2.9.1"
+  },
+  "dependencies": {
+    "markdown-it": "15.0.3",
+    "yauzl": "3.4.0",
+    "yazl": "3.3.1"
+  }
+}

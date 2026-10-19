@@ -1,0 +1,106 @@
+{
+  "source": "atlas-design-system.pdf",
+  "source_pages": {
+    "colors_light": 1,
+    "colors_dark": 2,
+    "typography": 3,
+    "sizes": 4
+  },
+  "colors": {
+    "surface": {
+      "light": "#F9F8F2",
+      "dark": "#010117"
+    },
+    "surface-raised": {
+      "light": "#F7F7F5",
+      "dark": "#1D173D"
+    },
+    "text": {
+      "light": "#14201C",
+      "dark": "#F2F5F4"
+    },
+    "text-muted": {
+      "light": "#5C6B66",
+      "dark": "#9FADA8"
+    },
+    "primary": {
+      "light": "#241F6F",
+      "dark": "#5866C2"
+    },
+    "primary-hover": {
+      "light": "#191F63",
+      "dark": "#7A86D3"
+    },
+    "on-primary": {
+      "light": "#FFFFFF",
+      "dark": "#0C1A16"
+    },
+    "border": {
+      "light": "#D8D9DF",
+      "dark": "#343440"
+    },
+    "danger": {
+      "light": "#B4472E",
+      "dark": "#F08A72"
+    }
+  },
+  "font_family": "Inter",
+  "typography": {
+    "Display": {
+      "weight": 700,
+      "size_px": 48,
+      "line_height_px": 56
+    },
+    "Heading/L": {
+      "weight": 700,
+      "size_px": 30,
+      "line_height_px": 38
+    },
+    "Heading/M": {
+      "weight": 600,
+      "size_px": 22,
+      "line_height_px": 30
+    },
+    "Heading/S": {
+      "weight": 600,
+      "size_px": 17,
+      "line_height_px": 24
+    },
+    "Body/L": {
+      "weight": 400,
+      "size_px": 18,
+      "line_height_px": 28
+    },
+    "Body/M": {
+      "weight": 400,
+      "size_px": 15,
+      "line_height_px": 22
+    },
+    "Body/S": {
+      "weight": 400,
+      "size_px": 13,
+      "line_height_px": 18
+    },
+    "Label/M": {
+      "weight": 500,
+      "size_px": 14,
+      "line_height_px": 20
+    },
+    "Label/S": {
+      "weight": 500,
+      "size_px": 12,
+      "line_height_px": 16
+    }
+  },
+  "radius_px": {
+    "S": 6,
+    "M": 12,
+    "L": 24
+  },
+  "spacing_px": {
+    "S": 8,
+    "M": 16,
+    "L": 24,
+    "XL": 40
+  }
+}

@@ -1,0 +1,14 @@
+# Dados pessoais e configuração local
+/vault/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+
+# Saídas de ferramentas futuras
+node_modules/
+target/
+dist/
+coverage/
+*.log
