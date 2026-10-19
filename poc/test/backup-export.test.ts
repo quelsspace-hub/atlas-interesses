@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { appendFile, lstat, mkdir, mkdtemp, readdir, readFile, rm, symlink, truncate, unlink, writeFile } from 'node:fs/promises'
+import { appendFile, lstat, mkdir, mkdtemp, readdir, readFile, realpath, rm, symlink, truncate, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -44,7 +44,8 @@ function sha256(bytes: Buffer): string {
 }
 
 async function workspace(): Promise<{ vault: string; out: string }> {
-  const root = await mkdtemp(join(tmpdir(), 'atlas-backup-'))
+  // Caminho real: o exportador/restaurador relatam destinos resolvidos; no Windows, TEMP pode vir em 8.3 (ex.: RUNNER~1).
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'atlas-backup-')))
   temporaryDirectories.push(root)
   const vault = join(root, 'vault')
   const out = join(root, 'out')
