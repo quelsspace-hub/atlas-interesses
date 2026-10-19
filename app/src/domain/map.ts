@@ -93,14 +93,27 @@ export function buildMapLayout(index: VaultIndex, filters: MapFilters = {}): Map
     const key = ids.length ? [...ids].sort().join('|') : UNGROUPED_ID
     buckets.set(key, [...(buckets.get(key) ?? []), item])
   }
-  for (const [key, bucket] of [...buckets.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+  // Arcos já ocupados (ângulo central, meia-abertura, faixa de raio). Conjuntos diferentes de grupos podem
+  // ter a mesma média angular; o conjunto seguinte é empurrado para fora até não sobrepor nenhum arco.
+  const occupied: Array<{ a: number; half: number; r0: number; r1: number }> = []
+  const angularGap = (x: number, y: number) => Math.abs(Math.atan2(Math.sin(x - y), Math.cos(x - y)))
+  const ordered = [...buckets.entries()].sort(([a], [b]) => (a.includes('|') ? 1 : 0) - (b.includes('|') ? 1 : 0) || a.localeCompare(b))
+  for (const [key, bucket] of ordered) {
     const ids = key === UNGROUPED_ID ? [UNGROUPED_ID] : key.split('|')
     const base = ids.length === 1 ? angle.get(ids[0]!)! : circularMean(ids.map((id) => angle.get(id)!))
-    const radius = ids.length === 1 ? R_ITEM : R_SHARED
     const sorted = [...bucket].sort((a, b) => a.metadata.title.localeCompare(b.metadata.title, 'pt-BR') || a.id.localeCompare(b.id))
     // Até `perRow` itens por arco; mais itens formam arcos externos.
     const span = ids.length === 1 ? sector * 0.8 : sector * 0.5
-    const perRow = Math.max(1, Math.floor((span * radius) / ITEM_GAP))
+    let radius = ids.length === 1 ? R_ITEM : R_SHARED
+    let perRow = Math.max(1, Math.floor((span * radius) / ITEM_GAP))
+    const extent = (r: number, rows: number) => ({ a: base, half: span / 2 + ITEM_GAP / (2 * r), r0: r - ROW_GAP / 2, r1: r + (rows - 1) * ROW_GAP + ROW_GAP / 2 })
+    for (let guard = 0; guard < 200; guard++) {
+      const e = extent(radius, Math.ceil(sorted.length / perRow))
+      if (!occupied.some((o) => angularGap(o.a, e.a) < o.half + e.half && o.r0 < e.r1 && e.r0 < o.r1)) break
+      radius += ROW_GAP
+      perRow = Math.max(1, Math.floor((span * radius) / ITEM_GAP))
+    }
+    occupied.push(extent(radius, Math.ceil(sorted.length / perRow)))
     sorted.forEach((item, i) => {
       const row = Math.floor(i / perRow)
       const inRow = Math.min(perRow, sorted.length - row * perRow)

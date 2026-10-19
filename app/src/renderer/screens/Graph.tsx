@@ -8,8 +8,9 @@ import { Button, Empty, routeFor } from '../ui.js'
 // V4 (D-030): grafo somente leitura. Links persistidos (linha contínua com seta) e relações
 // derivadas (tracejadas) são distinguidos por traço, legenda e texto, não só por cor.
 interface View { x: number; y: number; k: number; moved: boolean; fitted: boolean; selected: string | null; edge: number | null; relations: RelationKind[]; depth: 1 | 2 | 3; archived: boolean; list: boolean }
-let saved: View = { x: 0, y: 0, k: 1, moved: false, fitted: false, selected: null, edge: null, relations: DEFAULT_RELATIONS, depth: 1, archived: false, list: false }
-let savedFocus: string | null = null
+const INITIAL: View = { x: 0, y: 0, k: 1, moved: false, fitted: false, selected: null, edge: null, relations: DEFAULT_RELATIONS, depth: 1, archived: false, list: false }
+// Guardados por vault: outro vault não herda foco, seleção nem filtros (revisão da PR #8).
+let saved: { vault: string | null; view: View; focus: string | null } = { vault: null, view: INITIAL, focus: null }
 
 const KIND_LABEL: Record<string, string> = { item: 'Item', task: 'Tarefa', note: 'Nota', capture: 'Captura', group: 'Grupo', tag: 'Tag', missing: 'Ausente' }
 const MARK: Record<string, string> = { item: 'I', task: 'T', note: 'N', capture: 'C', group: 'G', tag: '#', missing: '!' }
@@ -18,12 +19,12 @@ const clampK = (k: number) => Math.min(3, Math.max(0.1, k))
 const MAX_NODES = 150
 
 export function GraphScreen({ focusId }: { focusId?: string }) {
-  const { index, navigate } = useAtlas()
-  const [view, setView] = useState<View>(() => (focusId && focusId !== savedFocus ? { ...saved, fitted: false, moved: false, selected: focusId, edge: null } : saved))
-  const [focus, setFocus] = useState<string | null>(focusId ?? savedFocus)
+  const { index, navigate, app } = useAtlas()
+  const mine = saved.vault === app.vaultPath ? saved : { vault: app.vaultPath, view: INITIAL, focus: null }
+  const [view, setView] = useState<View>(() => (focusId && focusId !== mine.focus ? { ...mine.view, fitted: false, moved: false, selected: focusId, edge: null } : mine.view))
+  const [focus, setFocus] = useState<string | null>(focusId ?? mine.focus)
   const [query, setQuery] = useState('')
-  useEffect(() => { saved = view }, [view])
-  useEffect(() => { savedFocus = focus }, [focus])
+  useEffect(() => { saved = { vault: app.vaultPath, view, focus } }, [view, focus, app.vaultPath])
   const box = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ w: 0, h: 0 })
   const drag = useRef<{ x: number; y: number; vx: number; vy: number; moved: boolean } | null>(null)
@@ -47,6 +48,20 @@ export function GraphScreen({ focusId }: { focusId?: string }) {
   useEffect(() => { if (size.w > 0 && (!view.fitted || !view.moved)) fit() }, [view.fitted, fit, size.w, size.h])
 
   const zoomAt = (f: number, cx = size.w / 2, cy = size.h / 2) => setView((v) => { const k = clampK(v.k * f); return { ...v, k, x: cx - ((cx - v.x) * k) / v.k, y: cy - ((cy - v.y) * k) / v.k, moved: true } })
+  const zoomRef = useRef(zoomAt)
+  zoomRef.current = zoomAt
+  useEffect(() => {
+    const el = box.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY === 0) return
+      e.preventDefault()
+      const r = el.getBoundingClientRect()
+      zoomRef.current(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - r.left, e.clientY - r.top)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [view.list])
   const refit = (patch: Partial<View>) => setView((v) => ({ ...v, ...patch, fitted: false, moved: false, edge: null }))
   const focusOn = (id: string | null) => { setFocus(id); refit({ selected: id }) }
 
@@ -159,8 +174,7 @@ export function GraphScreen({ focusId }: { focusId?: string }) {
             role="application"
             aria-label={`Grafo com ${graph.nodes.length} nós e ${graph.edges.length} relações. Setas movem, + e - aproximam, 0 ajusta. Tab percorre os nós; Enter abre.`}
             onKeyDown={onKey}
-            onWheel={(e) => { const r = box.current!.getBoundingClientRect(); zoomAt(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - r.left, e.clientY - r.top) }}
-            onPointerDown={(e) => { if ((e.target as Element).closest('.map-node, .graph-hit')) return; drag.current = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, moved: false }; (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) }}
+                        onPointerDown={(e) => { if ((e.target as Element).closest('.map-node, .graph-hit')) return; drag.current = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, moved: false }; (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) }}
             onPointerMove={(e) => { const d = drag.current; if (!d) return; d.moved = d.moved || Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) > 3; setView((v) => ({ ...v, x: d.vx + e.clientX - d.x, y: d.vy + e.clientY - d.y, moved: v.moved || d.moved })) }}
             onPointerUp={() => { if (drag.current && !drag.current.moved) setView((v) => ({ ...v, selected: null, edge: null })); drag.current = null }}
           >
