@@ -539,3 +539,9 @@ A proposta separa requisitos DECIDIDOS/ESPECIFICADOS de recomendações técnica
 - **VERIFICADO:** suíte `npm test` (runtime/typecheck/build), **164/164**, código 0; duas gerações idênticas, corpus de 21 arquivos/22.021.291 bytes; **75/75** operações em 15 cenários ×5. Sessenta restaurações com inventário/hash dos corpos iguais e quinze recusas de corrupção antes da confirmação/destino. PNG/PDF também conferidos por Python zlib/pypdf estrito. Comandos, ambiente, hashes e limites em [TEST_PLAN §19](TEST_PLAN.md).
 - **Resultado:** razões legítimas e de expansão iguais (até 1.028,393772 nos níveis 6/9). Não existe intervalo no corpus para o critério vigente de S-1. Alternativas PROPOSTAS em [PROPOSTA_AC07_LIMITES §6](PROPOSTA_AC07_LIMITES.md); requer decisão da proprietária antes de alterar contrato/implementar.
 - **Preservado:** Markdown/YAML canônico, UUID v4, OR por tags, D-001, corpo Markdown, progresso/null, manifesto SHA-256 e restauração em pasta nova; D-012 respeitada. Sem código nativo/V1, limite S-1 ou gate aprovado. Validação Windows do AC-13 permanece pendente.
+
+## 32. S-1 explícito e alternativa A — 19/10/2026
+
+**DECIDIDO:** política A (D-016). **VERIFICADO:** filtro por entrada, inclusive manifesto, antes de descompressão; comparação exata BigInt; política copiada antes de callbacks; exportador store simétrico. 172/172 testes e 11/11 casos funcionais ([TEST_PLAN §20](TEST_PLAN.md)).
+
+**PROPOSTO:** candidato 128:1, com recusas legítimas documentadas em PROPOSTA_AC07_LIMITES §6.1. **PENDENTE:** aprovação numérica e ativação padrão; hoje a opção precisa ser explícita. AC-07 permanece parcial. Nenhum aplicativo nativo/GUI criado; pendências Windows/Inbox preservadas.

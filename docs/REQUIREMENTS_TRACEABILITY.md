@@ -107,3 +107,9 @@ REQ-008 → D-015 / VAULT_CONTRACT §7.5 → S-1 / AC-07 → [PROPOSTA_F2_V1](PR
 ## F-2.v1 executado — 19/10/2026
 
 REQ-008 → D-015 / VAULT_CONTRACT §7.5 → S-1 / AC-07 → [TEST_PLAN §19](TEST_PLAN.md): composição aprovada, gerador/executor em `poc/bench/f2-*.ts`, testes em `poc/test/f2-compression.test.ts`, evidência em [dados](../poc/bench/results/f2-2026-10-19.jsonl) e [resumo](../poc/bench/results/f2-2026-10-19.md). 164/164 testes e 75/75 operações; razão não separa dados legítimos de expansão neste corpus. S-1 continua PENDENTE de decisão; sem TC completo/gate aprovado. Este registro sucede o planejamento acima.
+
+## Incremento S-1 — 19/10/2026
+
+| Requisito | Implementação/evidência | Estado |
+| --- | --- | --- |
+| AC-07 / D-016 | `poc/src/backup/compression.ts`, verificador/exportador/restaurador; TEST_PLAN §20 | Mecanismo explícito VERIFICADO; número padrão PENDENTE; AC-07 parcial |

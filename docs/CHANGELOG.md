@@ -1,5 +1,10 @@
 # Histórico de mudanças
 
+## 2026-10-19 — S-1 explícito
+
+- Política A aprovada (D-016); mecanismo opcional implementado sem instalar padrão numérico.
+- 172/172 testes e 11/11 casos do candidato 128:1; recusas legítimas documentadas. AC-07 segue parcial.
+
 ## 2026-10-19 — F-2.v1 aprovado e experimento executado
 
 - Gerador determinístico e executor F-2/F-3 com store/deflate 1/6/9, processos isolados e registros de memória/tempo/disco por fase. PNG/PDF reais e inventário com hashes de arquivos/corpos.

@@ -545,3 +545,13 @@ Razão por entrada = bytes descompactados reais / payload comprimido, sem cabeç
 **VERIFICADO neste corpus:** não há intervalo acima do máximo legítimo e abaixo das razões de expansão para satisfazer o critério 3 vigente de VAULT_CONTRACT §7.5. Bytes iguais sob os mesmos parâmetros comprimem igual, independentemente de intenção; repetir entradas aumenta custo total sem mudar a razão individual.
 
 **PENDENTE:** decisão sobre a revisão desse critério e a política S-1, com alternativas em [PROPOSTA_AC07_LIMITES §6](PROPOSTA_AC07_LIMITES.md). Nenhum limiar foi inventado ou codificado. Os limites já existentes e o exportador store permanecem vigentes. AC-07 completo, Windows/NTFS, TC-21 e gate V0 não aprovados. Nomes reservados, stack/UX e Inbox continuam com suas decisões próprias.
+
+## 20. S-1 explícito — 19/10/2026
+
+**VERIFICADO na PoC/Linux:** Node 24.22.0; `mise exec node@24.22.0 -- npm test --prefix poc`, executado da raiz: 172 testes, 172 pass, 0 fail/skipped, saída 0. Inclui typecheck/build e regressões de I/O, corrupção e permissões existentes.
+
+`poc/test/backup-compression.test.ts` cobre limite inclusivo, tamanhos zero, aritmética BigInt/ZIP64, configuração inválida, recusa antes de confirmação/escrita de ZIP clássico/forçado e manifesto comprimido, restauração store byte a byte, deflate permitido e estabilidade da política durante callbacks. Contagem real do yauzl continua ativa (S-2).
+
+`mise exec node@24.22.0 -- node poc/dist/bench/s1-run.js poc/bench/results/s1-2026-10-19.jsonl`: saída 0, 11/11 casos esperados (2 restaurações verificadas e 9 recusas). [Dados reais](../poc/bench/results/s1-2026-10-19.jsonl). Usa caminho de saída novo; recusa sobrescrever evidência existente. Experimento funcional, sem certificação de desempenho.
+
+**PENDENTE:** aprovação do valor numérico; omissão de `maxCompressionRatio` não ativa S-1. Suíte histórica F-2 permanece sem essa opção para preservar evidência de compatibilidade. AC-07 completo não aprovado; extração Windows/AC-13 permanece bloqueada neste Linux. Não repetidos testes pesados >4 GiB: cobertura deste incremento usa ZIP64 forçado e aritmética exata; resultados pesados anteriores não certificam esta alteração.

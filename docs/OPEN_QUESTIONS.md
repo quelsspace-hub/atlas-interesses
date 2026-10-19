@@ -38,3 +38,7 @@ Os seis pontos da auditoria foram confirmados no original e retirados do escopo 
 ## Como encerrar uma questão
 
 Registrar escolha, data, responsável, justificativa, documentos afetados e testes necessários. Questão técnica pode ser respondida por experimento; decisão de produto requer aceite da proprietária. A existência desta lista não impede leitura da documentação nem planejamento da próxima tarefa.
+
+## Atualização S-1 — 19/10/2026
+
+**DECIDIDO:** alternativa A autorizada (D-016). **VERIFICADO:** mecanismo explícito e avaliação do candidato em TEST_PLAN §20. **PENDENTE:** aprovar o número 128:1 ou solicitar outro orçamento; nenhum padrão instalado. A pendência anterior de escolha entre A/B está resolvida. Windows/AC-13, nomes, Inbox e decisões nativas continuam separados.

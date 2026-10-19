@@ -5,6 +5,8 @@ import type { BackupDiagnostic } from './errors.js'
 import { BackupVerificationError } from './errors.js'
 import { backupPathProblem, collisionKey, manifestProblems, manifestSizeBound, MANIFEST_PATH, pathLimitProblem, type BackupManifest } from './manifest.js'
 
+import { checkCompressionRatio, validateCompressionLimit, type CompressionPolicy } from './compression.js'
+
 const ACCEPTED_METHODS = [0, 8]
 const UNIX_TYPE_MASK = 0o170000
 const UNIX_REGULAR = 0o100000
@@ -32,7 +34,8 @@ export function listEntries(zipfile: yauzl.ZipFile): Promise<yauzl.Entry[]> {
   })
 }
 
-export function openEntry(zipfile: yauzl.ZipFile, entry: yauzl.Entry): Promise<Readable> {
+export async function openEntry(zipfile: yauzl.ZipFile, entry: yauzl.Entry, policy: CompressionPolicy = {}): Promise<Readable> {
+  checkCompressionRatio(entry.fileName, entry.uncompressedSize, entry.compressedSize, policy.maxCompressionRatio)
   return new Promise((resolve, reject) => {
     zipfile.openReadStream(entry, (error, stream) => {
       if (error || !stream) reject(error ?? new Error('entry could not be read'))
@@ -41,8 +44,8 @@ export function openEntry(zipfile: yauzl.ZipFile, entry: yauzl.Entry): Promise<R
   })
 }
 
-async function digestEntry(zipfile: yauzl.ZipFile, entry: yauzl.Entry): Promise<{ size: number; sha256: string; bytes?: Buffer }> {
-  const stream = await openEntry(zipfile, entry)
+async function digestEntry(zipfile: yauzl.ZipFile, entry: yauzl.Entry, policy: CompressionPolicy): Promise<{ size: number; sha256: string; bytes?: Buffer }> {
+  const stream = await openEntry(zipfile, entry, policy)
   const hash = createHash('sha256')
   let size = 0
   for await (const chunk of stream) {
@@ -52,15 +55,16 @@ async function digestEntry(zipfile: yauzl.ZipFile, entry: yauzl.Entry): Promise<
   return { size, sha256: hash.digest('hex') }
 }
 
-async function readEntryBytes(zipfile: yauzl.ZipFile, entry: yauzl.Entry): Promise<Buffer> {
-  const stream = await openEntry(zipfile, entry)
+async function readEntryBytes(zipfile: yauzl.ZipFile, entry: yauzl.Entry, policy: CompressionPolicy): Promise<Buffer> {
+  const stream = await openEntry(zipfile, entry, policy)
   const chunks: Buffer[] = []
   for await (const chunk of stream) chunks.push(chunk as Buffer)
   return Buffer.concat(chunks)
 }
 
 // Pré-validação do ZIP que não depende do destino (VAULT_CONTRACT §7.4 item 5 e §7.7 item 2).
-export async function verifyBackupArchive(path: string): Promise<BackupManifest> {
+export async function verifyBackupArchive(path: string, options: CompressionPolicy = {}): Promise<BackupManifest> {
+  const policy = { maxCompressionRatio: validateCompressionLimit(options.maxCompressionRatio) }
   const diagnostics: BackupDiagnostic[] = []
   const fail = (category: BackupDiagnostic['category'], entryPath: string, code: string, message: string) =>
     diagnostics.push({ category, path: entryPath, code, message })
@@ -84,6 +88,8 @@ export async function verifyBackupArchive(path: string): Promise<BackupManifest>
     const keys = new Set<string>()
     for (const entry of entries) {
       const name = entry.fileName
+      // Todas as entradas, inclusive manifest.json, antes de descomprimir qualquer uma.
+      checkCompressionRatio(name, entry.uncompressedSize, entry.compressedSize, policy.maxCompressionRatio)
       if (byName.has(name) || keys.has(collisionKey(name))) fail('security', name, 'duplicate-entry', 'duplicate entry name')
       byName.set(name, entry)
       keys.add(collisionKey(name))
@@ -110,7 +116,7 @@ export async function verifyBackupArchive(path: string): Promise<BackupManifest>
     }
     let manifestValue: unknown
     try {
-      manifestValue = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await readEntryBytes(zipfile, manifestEntry)))
+      manifestValue = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await readEntryBytes(zipfile, manifestEntry, policy)))
     } catch (error) {
       throw new BackupVerificationError([{ category: 'structure', path: MANIFEST_PATH, code: 'invalid-manifest', message: String(error) }])
     }
@@ -131,7 +137,7 @@ export async function verifyBackupArchive(path: string): Promise<BackupManifest>
         continue
       }
       if (entry.uncompressedSize !== file.size) fail('integrity', file.path, 'size-mismatch', 'declared size differs from the archive')
-      const actual = await digestEntry(zipfile, entry)
+      const actual = await digestEntry(zipfile, entry, policy)
       if (actual.size !== file.size) fail('integrity', file.path, 'size-mismatch', 'extracted byte count differs from the manifest')
       if (actual.sha256 !== file.sha256) fail('integrity', file.path, 'hash-mismatch', 'SHA-256 differs from the manifest')
     }

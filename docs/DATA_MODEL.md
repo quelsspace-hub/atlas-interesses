@@ -209,3 +209,7 @@ Para estes seis contratos, a fonte original confirma enums e obrigatoriedade; n�
 O [vault fictício](examples/README.md) contém exemplos concretos com UUIDs válidos, datas citadas e links relativos. Todos seguem esta **proposta**, sem indicar aprovação do schema final.
 
 Antes de congelar `schema_version: 1`, resolver Q-01 a Q-05, comprovar parsing/escrita, edição externa e restauração. Como não há dados reais existentes confirmados, não inventar migração já executada. Futuros dados incompatíveis exigirão migração explícita e backup anterior.
+
+## Atualização de backup — S-1, 19/10/2026
+
+**DECIDIDO:** [D-016](DECISIONS.md) permite recusar ZIPs externos legítimos por razão de compressão; exportações Atlas permanecem restauráveis via store. Regra central em [VAULT_CONTRACT §7.5](VAULT_CONTRACT.md). Nenhum schema de entidade muda. **PENDENTE:** limite numérico padrão; mecanismo explícito verificado apenas na PoC ([TEST_PLAN §20](TEST_PLAN.md)), não na aplicação V1.

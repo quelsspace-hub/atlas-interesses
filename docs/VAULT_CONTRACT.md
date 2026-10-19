@@ -225,7 +225,9 @@ A classificação não autoriza ignorar limites reais do formato ZIP, do SO, do 
 
 1. Os limites de segurança são fixados por critérios técnicos e pelos casos maliciosos de F-3, nunca por um múltiplo de F-2.
 2. Os limites de capacidade são verificados contra o ambiente e o formato. As medições de F-3 descrevem a curva de capacidade (tempo, memória, disco) e não criam teto de tamanho. O processamento segue o requisito de streaming do §7.4. Metas de tempo e desempenho pertencem à Q-07, que continua aberta.
-3. No caso da razão de compressão, ficar acima da maior razão observada em dados legítimos, incluindo amostras sintéticas muito comprimíveis de F-2, e abaixo da razão dos ZIPs maliciosos de F-3, sempre combinada com a contagem de bytes reais.
+3. **Emenda D-016 (19/10/2026):** a razão é um filtro conservador de formato e pode recusar ZIPs externos legítimos muito comprimíveis. Não distingue intenção maliciosa. O valor numérico exige decisão apoiada em medições; combinar sempre com contagem de bytes reais. A exportação Atlas deve permanecer restaurável usando store para conteúdos que excederiam o limite. A recusa deve explicar a possibilidade de conteúdo legítimo e orientar nova exportação sem compressão pela ferramenta de origem.
+
+   *Critério anterior substituído: ficar acima da maior razão legítima, incluindo F-2 muito comprimível, e abaixo das razões maliciosas de F-3. A medição demonstrou sobreposição.*
 4. No caso de caminhos, garantir que o caminho absoluto restaurado caiba no limite da plataforma, considerando um caminho de destino típico.
 
 Valores que não satisfaçam os critérios voltam para decisão.
@@ -241,7 +243,7 @@ Valores que não satisfaçam os critérios voltam para decisão.
 | Segurança | Comprimento de cada segmento | ≤ 255 caracteres |
 | Segurança | Profundidade do caminho relativo | ≤ 32 segmentos |
 | Segurança | Travessia, caminho absoluto, letra de unidade | Recusa (regra existente) |
-| Segurança | Razão de compressão por entrada | **PENDENTE:** sem valor. Depende de F-2.v1 com amostras muito comprimíveis e dos ZIPs maliciosos de F-3 (critério 3) |
+| Segurança | Razão de compressão por entrada | **PENDENTE:** valor padrão. Política A decidida (D-016); candidato 128:1 avaliado, não aprovado. PoC aceita `maxCompressionRatio` explícito; omiti-lo mantém S-1 desativado |
 | Capacidade | Entradas, tamanho por arquivo, total, memória, tempo | Sem teto; falha controlada quando houver impossibilidade real. Metas: Q-07 |
 | Capacidade | Espaço livre | Restauração: ≥ total declarado. Exportação: ≥ Σ tamanhos + N × (100 + 2 × 3.072) + teto do manifesto |
 | Capacidade | Caminho absoluto no destino | Verificado antes da confirmação contra o limite que a plataforma oferece de fato ao aplicativo: cerca de 32.767 caracteres com `LongPathsEnabled` = 1 **e** aplicativo `longPathAware`; caso contrário, 259 para arquivos e 247 para diretórios. Ao ultrapassar, falha controlada com diagnóstico |

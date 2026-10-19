@@ -155,3 +155,9 @@ O stream truncado é simulado limitando a metade o trecho comprimido acessível 
 O inventário inclui hashes de arquivo/corpo; duas gerações independentes devem ser iguais. AES-256-CTR usa chave SHA-256 de `semente + NUL + key:rótulo` e IV nos primeiros 16 bytes de SHA-256 de `semente + NUL + iv:rótulo`. UUIDs derivam de `uuid:rótulo`, com bits v4/variante ajustados. PNG usa filtros zero e zlib nível 9; PDF 1.4 usa xref clássico e raster FlateDecode nível 9. Conteúdo e manifesto usam timestamp fixo. O ZIP experimental também informa esse mtime; diferenças de plataforma/metadados não são usadas como identidade do corpus.
 
 Dados brutos e resumo da execução Linux: [JSONL](bench/results/f2-2026-10-19.jsonl) e [resumo](bench/results/f2-2026-10-19.md). Resultados e decisão S-1 em [TEST_PLAN §19](../docs/TEST_PLAN.md). Resultados Linux não validam Windows/NTFS, e a existência do corpus não aprova AC-07.
+
+## S-1: política explícita de compressão
+
+`exportBackup`, `restoreBackup` e `verifyBackupArchive` aceitam `maxCompressionRatio`, inteiro seguro ≥ 1. **Omitir a opção não aplica S-1**; não há valor padrão aprovado. A razão inclui manifesto; igualdade é aceita. O exportador usa store em todas as entradas. ZIP externo legítimo pode ser recusado e exigir reexportação store.
+
+Candidato **PROPOSTO**, não padrão: 128:1. Da raiz, após `npm test --prefix poc`, execute `node poc/dist/bench/s1-run.js /caminho/novo-resultados.jsonl` (Node 24.22.0). O runner exige saída inexistente. Evidência e consequências em [TEST_PLAN §20](../docs/TEST_PLAN.md) e [proposta §6.1](../docs/PROPOSTA_AC07_LIMITES.md).

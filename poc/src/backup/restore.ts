@@ -1,3 +1,4 @@
+import { validateCompressionLimit, type CompressionPolicy } from './compression.js'
 import { createHash, randomUUID } from 'node:crypto'
 import type { FileHandle } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
@@ -70,7 +71,7 @@ export interface DestinationPathLimits {
 
 export const DEFAULT_DESTINATION_PATH_LIMITS: DestinationPathLimits = { file: 259, directory: 247 }
 
-export interface RestoreOptions {
+export interface RestoreOptions extends CompressionPolicy {
   parentDirectory: string
   folderName: string
   appDataDirectory: string
@@ -192,6 +193,15 @@ export async function restoreBackup(archivePath: string, options: RestoreOptions
   }
   const fail = (stage: RestoreStage, diagnostic: BackupDiagnostic) => report.errors.push({ ...diagnostic, stage })
 
+  // Copiar a política antes de callbacks/awaits impede alteração durante a operação.
+  let policy: CompressionPolicy
+  try {
+    policy = { maxCompressionRatio: validateCompressionLimit(options.maxCompressionRatio) }
+  } catch (error) {
+    fail('pre-validation', { category: 'security', path: archivePath, code: 'invalid-compression-limit', message: String(error) })
+    return finish('failed')
+  }
+
   // 1. Pré-validação do ZIP, sem escrever nada.
   phase('pre-digest')
   try {
@@ -205,7 +215,7 @@ export async function restoreBackup(archivePath: string, options: RestoreOptions
   let manifest: BackupManifest
   phase('pre-verify')
   try {
-    manifest = await verifyBackupArchive(archivePath)
+    manifest = await verifyBackupArchive(archivePath, policy)
   } catch (error) {
     if (error instanceof BackupVerificationError) for (const entry of error.diagnostics) fail('pre-validation', entry)
     else fail('pre-validation', { category: 'structure', path: archivePath, code: 'invalid-archive', message: String(error) })
@@ -382,7 +392,7 @@ export async function restoreBackup(archivePath: string, options: RestoreOptions
           next(null, chunk)
         }
       })
-      await pipeline(await openEntry(zipfile, entry), tap, fs.createTempWriteStream(handle))
+      await pipeline(await openEntry(zipfile, entry, policy), tap, fs.createTempWriteStream(handle))
       report.counts.extracted += 1
       if (size !== file.size || hash.digest('hex') !== file.sha256) {
         throw new RestoreAbort('extraction', { category: 'integrity', path: file.path, code: 'hash-mismatch', message: 'extracted bytes differ from the manifest' })

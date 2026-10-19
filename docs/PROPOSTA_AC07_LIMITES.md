@@ -124,3 +124,13 @@ A página *Naming Files* também lista os nomes reservados de dispositivo (como 
 | B — retirar a razão como critério de recusa e avaliar controles de recursos durante a operação | Preserva aceitação de entradas legítimas muito comprimíveis; a razão serve só como diagnóstico. Hashes/contagem de bytes continuam necessários, mas não evitam custo alto de um ZIP coerente | Emendar critério 3 e decidir o comportamento de cancelamento, tempo/memória/espaço e recuperação no backend adequado. Nenhuma garantia de proteção contra exaustão foi demonstrada |
 
 **Recomendação técnica PROPOSTA:** escolher primeiro qual consequência é aceitável. A preserva a direção de fallback store já formalizada, mas precisa aceitar explicitamente a possibilidade de recusa de dados externos legítimos. B exige uma política de recursos ainda não decidida. Não fixar S-1 nem declarar AC-07 completo antes dessa decisão e das provas correspondentes. Essa escolha não é resolvida pela aprovação da composição F-2.v1.
+
+### 6.1 Alternativa A aprovada; valor numérico proposto
+
+**DECIDIDO:** D-016 substitui o critério de separação impossível pela política A. O texto anterior registra o estado antes dessa decisão.
+
+**PROPOSTO:** 128:1 permite até 128 bytes declarados por byte comprimido, com contagem real obrigatória. É um orçamento explícito de expansão, não um valor deduzido como seguro do máximo legítimo. Não limita volume agregado, tempo ou memória. Requer aprovação antes de virar padrão.
+
+**VERIFICADO:** avaliação funcional em 11 casos, não benchmark de desempenho. F-2 store e exportação Atlas store restauram com inventário SHA-256 idêntico; F-2 deflate 1/6/9 e seis F-3 de expansão são recusados antes de confirmação/destino. Deflate 1 excede o limite em quatro entradas legítimas; deflate 6/9, em sete (incluindo Group e Tags). [Resultados](../poc/bench/results/s1-2026-10-19.jsonl).
+
+**PENDENTE:** decidir se essa perda de compatibilidade é aceitável para adotar 128:1. A PoC só aplica S-1 quando quem chama informa `maxCompressionRatio`; omissão mantém comportamento histórico, sem S-1. AC-07 permanece parcial.
