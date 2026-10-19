@@ -1,0 +1,52 @@
+{
+  "name": "atlas-de-interesses",
+  "productName": "Atlas de Interesses",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Atlas de Interesses — organização local de interesses, projetos e notas em Markdown/YAML.",
+  "main": "dist/main/main.cjs",
+  "packageManager": "npm@10.8.2",
+  "scripts": {
+    "runtime": "node --version",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.renderer.json",
+    "build:main": "node scripts/build-main.mjs",
+    "build:renderer": "vite build",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:test": "tsc -p tsconfig.test.json",
+    "test": "npm run runtime && npm run typecheck && npm run build:test && node --test \"dist-test/test/*.test.js\"",
+    "start": "npm run build && electron .",
+    "dist": "npm run build && electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.atlas-de-interesses.app",
+    "productName": "Atlas de Interesses",
+    "directories": { "output": "release" },
+    "files": ["dist/**/*", "package.json"],
+    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "perMachine": false }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@fontsource/inter": "5.3.0",
+    "@types/markdown-it": "14.1.2",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/yauzl": "3.4.0",
+    "@types/yazl": "3.3.1",
+    "@vitejs/plugin-react": "6.1.2",
+    "electron": "44.9.0",
+    "electron-builder": "26.15.3",
+    "esbuild": "0.28.2",
+    "lucide-react": "1.59.0",
+    "markdown-it": "15.0.3",
+    "node-win-x64": "24.22.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "yaml": "2.9.1",
+    "yauzl": "3.4.0",
+    "yazl": "3.3.1"
+  }
+}
