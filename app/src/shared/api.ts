@@ -14,11 +14,36 @@ export interface ApiError {
 
 export type ThemePreference = 'system' | 'light' | 'dark'
 
+export interface AutoBackupSettings {
+  enabled: boolean
+  folder: string | null
+  keep: number
+  lastSuccessAt: string | null
+  last: { at: string; ok: boolean; message: string; file: string | null } | null
+}
+
 export interface AppState {
   vaultPath: string | null
   recentVaults: string[]
   theme: ThemePreference
   version: string
+  autoBackup: AutoBackupSettings
+  // Provedor de sincronização detectado pelo caminho do vault (informativo, D-031).
+  syncProvider: string | null
+}
+
+export interface ConflictCopyInfo {
+  path: string
+  recordId: string
+  recordPath: string
+  kind: EntityKind
+}
+
+export interface ConflictDetail extends ConflictCopyInfo {
+  copyText: string
+  copyProblems: string[]
+  currentText: string | null
+  currentRevision: string | null
 }
 
 export interface VaultSnapshot {
@@ -29,6 +54,7 @@ export interface VaultSnapshot {
   transactions: string[]
   recovery: Array<{ manifest: string; captureId: string; outcome: 'completed' | 'discarded' | 'blocked'; message: string }>
   schemaVersions: number[]
+  conflicts: ConflictCopyInfo[]
 }
 
 export interface ConversionOutput {
@@ -89,6 +115,14 @@ export interface AtlasApi {
   chooseRestoreParent(): Promise<Result<string | null>>
   runRestore(archivePath: string, parentDirectory: string, folderName: string): Promise<Result<RestoreOutcome>>
   openRestoredVault(path: string): Promise<Result<AppState>>
+
+  getConflict(path: string): Promise<Result<ConflictDetail>>
+  resolveConflict(path: string, choice: 'keep-current' | 'use-copy', expectedCurrentRevision: string | null): Promise<Result<null>>
+  chooseAutoBackupFolder(): Promise<Result<AppState>>
+  setAutoBackup(patch: { enabled?: boolean; keep?: number }): Promise<Result<AppState>>
+  runAutoBackupNow(): Promise<Result<AppState>>
+  onVaultChanged(handler: () => void): () => void
+  onStateChanged(handler: (state: AppState) => void): () => void
 
   revealPath(path: string): Promise<Result<null>>
   openExternal(url: string): Promise<Result<null>>

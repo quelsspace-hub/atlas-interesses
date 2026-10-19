@@ -22,6 +22,21 @@ const api: AtlasApi = {
   chooseRestoreParent: () => invoke('backup:choose-parent'),
   runRestore: (archive, parent, name) => invoke('backup:run-restore', archive, parent, name),
   openRestoredVault: (path) => invoke('backup:open-restored', path),
+  getConflict: (path) => invoke('conflict:get', path),
+  resolveConflict: (path, choice, revision) => invoke('conflict:resolve', path, choice, revision),
+  chooseAutoBackupFolder: () => invoke('autobackup:choose-folder'),
+  setAutoBackup: (patch) => invoke('autobackup:set', patch),
+  runAutoBackupNow: () => invoke('autobackup:run'),
+  onVaultChanged: (handler) => {
+    const listener = () => handler()
+    ipcRenderer.on('vault:changed', listener)
+    return () => ipcRenderer.removeListener('vault:changed', listener)
+  },
+  onStateChanged: (handler) => {
+    const listener = (_: unknown, state: Parameters<typeof handler>[0]) => handler(state)
+    ipcRenderer.on('state:changed', listener)
+    return () => ipcRenderer.removeListener('state:changed', listener)
+  },
   revealPath: (path) => invoke('shell:reveal', path),
   openExternal: (url) => invoke('shell:external', url),
   confirmClose: () => invoke('app:confirm-close'),

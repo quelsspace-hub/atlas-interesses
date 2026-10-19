@@ -101,6 +101,7 @@ h3, .h-s { font-size: 17px; line-height: 24px; font-weight: 600; margin: 0; }
   .nav-item { justify-content: center; }
   .page { padding: var(--space-m); }
   .detail { grid-template-columns: 1fr; }
+  .toasts { left: calc(64px + var(--space-s)); right: var(--space-s); }
 }
 
 /* Superfícies */
@@ -167,7 +168,8 @@ textarea.editor { min-height: 360px; font-family: 'Cascadia Mono', Consolas, ui-
 .overlay { position: fixed; inset: 0; background: rgba(1, 1, 23, 0.45); display: grid; place-items: center; z-index: 50; padding: var(--space-m); }
 .modal { background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-m); width: min(640px, 100%); max-height: calc(100vh - 48px); overflow-y: auto; padding: var(--space-l); display: flex; flex-direction: column; gap: var(--space-m); box-shadow: 0 12px 48px rgba(0,0,0,0.25); }
 .modal.wide { width: min(980px, 100%); }
-.toasts { position: fixed; right: var(--space-m); bottom: var(--space-m); display: flex; flex-direction: column; gap: var(--space-s); z-index: 60; max-width: 420px; }
+/* Avisos à esquerda da área de conteúdo: não cobrem as ações dos diálogos, alinhadas à direita. */
+.toasts { position: fixed; left: calc(232px + var(--space-m)); bottom: var(--space-m); display: flex; flex-direction: column; gap: var(--space-s); z-index: 60; max-width: 420px; }
 .toast { background: var(--surface-raised); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: var(--radius-s); padding: 10px 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); display: flex; gap: 8px; align-items: flex-start; }
 .toast.error { border-left-color: var(--danger); }
 .toast p { margin: 0; flex: 1; }

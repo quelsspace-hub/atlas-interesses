@@ -1,5 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeTheme, shell, type IpcMainInvokeEvent } from 'electron'
+import { watch, type FSWatcher } from 'node:fs'
 import { join } from 'node:path'
+import { folderTrash } from '../vault/sync.js'
 import { AtlasService, fail, ok } from './service.js'
 import type { EntityKind } from '../domain/model.js'
 import type { ConversionOutput, Result, ThemePreference } from '../shared/api.js'
@@ -10,7 +12,41 @@ let allowClose = false
 // ATLAS_USER_DATA isola as preferências do dispositivo (testes E2E); --vault=<pasta> abre um vault ao iniciar.
 if (process.env.ATLAS_USER_DATA) app.setPath('userData', process.env.ATLAS_USER_DATA)
 const vaultArg = process.argv.find((a) => a.startsWith('--vault='))?.slice('--vault='.length)
-const service = new AtlasService(app.getPath('userData'), app.getVersion())
+// Lixeira do sistema para tudo que o app remove (D-031); ATLAS_TRASH_DIR desvia para uma pasta nos testes.
+const trash = process.env.ATLAS_TRASH_DIR ? folderTrash(process.env.ATLAS_TRASH_DIR) : (path: string) => shell.trashItem(path)
+const service = new AtlasService(app.getPath('userData'), app.getVersion(), trash)
+
+// Observação do vault (D-031 §3): mudanças feitas pela sincronização ou por outro editor reindexam a interface.
+let watcher: FSWatcher | null = null
+let watchedRoot: string | null = null
+let debounce: NodeJS.Timeout | null = null
+let lastSignature: string | null = null
+async function syncWatch(): Promise<void> {
+  const root = service.vaultRoot
+  if (root === watchedRoot) return
+  watcher?.close()
+  watcher = null
+  watchedRoot = root
+  lastSignature = root ? await service.diskSignature() : null
+  if (!root) return
+  watcher = watch(root, { recursive: true }, () => {
+    if (debounce) clearTimeout(debounce)
+    debounce = setTimeout(() => void checkDisk(), 800)
+  })
+  watcher.on('error', () => { watcher?.close(); watcher = null })
+  void maybeAutoBackup()
+}
+async function checkDisk(): Promise<void> {
+  const signature = await service.diskSignature().catch(() => null)
+  if (signature === null || signature === lastSignature) return
+  lastSignature = signature
+  window?.webContents.send('vault:changed')
+}
+async function maybeAutoBackup(): Promise<void> {
+  if (!service.autoBackupDue()) return
+  const state = await service.runAutoBackup().catch(() => null)
+  if (state) window?.webContents.send('state:changed', state)
+}
 
 function applyTheme(theme: ThemePreference): void {
   nativeTheme.themeSource = theme
@@ -20,7 +56,10 @@ function handle<A extends unknown[], T>(channel: string, fn: (...args: A) => Pro
   ipcMain.handle(channel, async (event: IpcMainInvokeEvent, ...args: unknown[]): Promise<Result<T>> => {
     if (!window || event.sender !== window.webContents) return { ok: false, error: { code: 'invalid', message: 'origem IPC não autorizada' } }
     try {
-      return ok(await fn(...(args as A)))
+      const value = await fn(...(args as A))
+      await syncWatch()
+      lastSignature = service.memorySignature()
+      return ok(value)
     } catch (error) {
       return fail(error)
     }
@@ -77,6 +116,17 @@ function registerIpc(): void {
   })
   handle('backup:run-restore', (archivePath: string, parent: string, folderName: string) => service.runRestore(archivePath, parent, folderName))
   handle('backup:open-restored', (path: string) => service.activate(path, false))
+  handle('conflict:get', (path: string) => service.conflict(path))
+  handle('conflict:resolve', async (path: string, choice: 'keep-current' | 'use-copy', revision: string | null) => {
+    return service.resolveConflict(path, choice, revision)
+  })
+  handle('autobackup:choose-folder', async () => {
+    const result = await dialog.showOpenDialog(window!, { title: 'Pasta dos backups automáticos (fora do vault)', properties: ['openDirectory', 'createDirectory'] })
+    if (result.canceled || result.filePaths.length === 0) return service.state()
+    return service.setAutoBackup({ folder: result.filePaths[0]! })
+  })
+  handle('autobackup:set', (patch: { enabled?: boolean; keep?: number }) => service.setAutoBackup(patch))
+  handle('autobackup:run', () => service.runAutoBackup(true))
   handle('shell:reveal', (path: string) => {
     shell.showItemInFolder(path)
     return null
@@ -142,6 +192,8 @@ else {
     applyTheme(service.state().theme)
     registerIpc()
     createWindow()
+    await syncWatch()
+    setInterval(() => void maybeAutoBackup(), 60 * 60 * 1000)
   })
   app.on('window-all-closed', () => app.quit())
 }

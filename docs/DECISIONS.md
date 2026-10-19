@@ -297,3 +297,21 @@ Registre problema, alternativa, impacto sobre arquivos existentes, migração, t
   - grafo sem limite: ilegível e lento em vaults grandes;
   - persistir relações derivadas: duplicaria dados que já estão no YAML.
 - **Testes:** `app/test/graph.test.ts`, jornada E2E 10 e TEST_PLAN §25.
+
+## D-031 — V5: arquitetura de sync, offline, conflitos, backup automático e Android
+
+- **DECIDIDO em 19/10/2026** por delegação da proprietária. Detalhe normativo em [PROPOSTA_V5_ARQUITETURA](PROPOSTA_V5_ARQUITETURA.md).
+- **Problema:** o roadmap pede, para a V5, sync, offline, autenticação, conflitos, backup automático e Android, com “arquitetura explícita”. O critério é “conflitos recuperáveis, offline definido e segurança validada”, sem abandonar D-011.
+- **Decisão — sincronização por pasta:** o vault fica numa pasta sincronizada pelo provedor que a pessoa já usa (OneDrive, Dropbox, Google Drive, Syncthing).
+  - O Atlas não tem servidor nem conta, e não guarda credenciais; a autenticação é a do provedor.
+  - Offline é o modo normal.
+  - O app observa o vault e reindexa quando o disco muda.
+- **Conflitos:** o app reconhece as cópias de conflito pelo UUID no início do nome e as mostra lado a lado. A pessoa escolhe entre manter a atual ou usar a cópia; a versão descartada vai para a **Lixeira** do sistema. A troca é recusada se a versão atual mudou desde a comparação ou se a cópia é inválida. Nunca há mescla automática.
+- **Backup automático:** configuração do dispositivo; uma vez por dia, com o mesmo motor da exportação (verificado). Na rotação, só os arquivos `atlas-auto-*` vão para a Lixeira. Inclui o conteúdo não canônico e exclui os arquivos de sistema da lista fechada, por decisão permanente registrada na configuração.
+- **Segurança:** sem rede no renderer (CSP `connect-src 'none'`), sem Node no renderer, IPC com verificação de remetente. Verificado por E2E.
+- **Android:** mesmo modelo de dados e de sync; app com Capacitor reaproveitando `src/domain`, com um adaptador do Storage Access Framework para o `StoragePort`. **PENDENTE** de SDK, aparelho e prova do protocolo de escrita no aparelho.
+- **Alternativas rejeitadas:**
+  - Git embutido: credenciais e merge de YAML;
+  - servidor próprio com conta: hospedagem e dados pessoais fora do aparelho;
+  - CRDT: outro formato canônico.
+- **Testes:** `app/test/sync.test.ts`, jornada E2E 11 e TEST_PLAN §26.

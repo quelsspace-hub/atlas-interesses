@@ -28,7 +28,7 @@ npm run dist           # build e instalador NSIS em release/ (sem assinatura de 
 
 Para rodar o E2E no executável empacotado, defina `ATLAS_E2E_EXE` com o caminho de `release\win-unpacked\Atlas de Interesses.exe`.
 
-Para abrir um vault direto ao iniciar, use `--vault=<pasta>`. `ATLAS_USER_DATA=<pasta>` isola as preferências do dispositivo; os testes usam essa variável.
+Para abrir um vault direto ao iniciar, use `--vault=<pasta>`. `ATLAS_TRASH_DIR=<pasta>` desvia a Lixeira para uma pasta comum (testes); sem ela, o que o app remove vai para a Lixeira do Windows. `ATLAS_USER_DATA=<pasta>` isola as preferências do dispositivo; os testes usam essa variável.
 
 ## Ambiente verificado
 

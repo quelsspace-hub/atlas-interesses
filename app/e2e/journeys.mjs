@@ -2,19 +2,20 @@
 // Uso: npm run build && node e2e/journeys.mjs [pasta-de-screenshots]
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { readdir, readFile, rm } from 'node:fs/promises'
+import { readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { launch, tempDir } from './launch.mjs'
 
 const shots = process.argv[2]
 const vault = await tempDir('atlas-e2e-vault-')
 const userData = await tempDir('atlas-e2e-data-')
+const trashDir = await tempDir('atlas-e2e-trash-')
 const sha = (b) => createHash('sha256').update(b).digest('hex')
 const files = async (folder) => (await readdir(join(vault, ...folder.split('/')))).filter((n) => /^[0-9a-f-]{36}\.md$/.test(n))
 const read = (folder, name) => readFile(join(vault, ...folder.split('/'), name), 'utf8')
 const steps = []
 const step = (name) => { steps.push(name); console.log(`• ${name}`) }
-let session = await launch({ vault, userData })
+let session = await launch({ vault, userData, trash: trashDir })
 let { page } = session
 const shot = async (name) => { if (shots) await page.screenshot({ path: join(shots, `${name}.png`) }) }
 const nav = (label) => page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('button', { name: label, exact: false }).first().click()
@@ -216,6 +217,42 @@ try {
   await page.getByRole('button', { name: 'Estudar design de serviços' }).click()
   await page.getByRole('heading', { name: 'Backlinks' }).waitFor()
 
+  step('V5: segurança do renderer, mudança externa relida e conflito de sincronização resolvido pela Lixeira')
+  const security = await page.evaluate(async () => ({
+    require: typeof window.require,
+    process: typeof window.process,
+    network: await fetch('https://example.com').then(() => 'permitida', () => 'recusada')
+  }))
+  assert.deepEqual(security, { require: 'undefined', process: 'undefined', network: 'recusada' }, 'renderer sem Node e sem rede')
+  // Mudança externa (como a sincronização faria): o título do projeto muda no disco.
+  const projectFile = (await files('items'))[0]
+  const projectText = await read('items', projectFile)
+  await writeFile(join(vault, 'items', projectFile), projectText.replace('title: Projeto E2E', 'title: Projeto E2E remoto'))
+  await toast('O vault mudou fora do aplicativo')
+  await nav('Atlas')
+  await page.getByRole('button', { name: 'Projeto E2E remoto' }).waitFor()
+  // Cópia de conflito do provedor para a tag UX.
+  const [tagFile] = await files('tags')
+  const tagText = await read('tags', tagFile)
+  await writeFile(join(vault, 'tags', tagFile.replace('.md', ' (1).md')), tagText.replace('title: UX', 'title: UX remota'))
+  await toast('O vault mudou fora do aplicativo')
+  await nav('Configurações')
+  const conflicts = page.getByRole('region', { name: 'Conflitos de sincronização' })
+  await conflicts.getByRole('button', { name: 'Comparar e resolver' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Conflito de sincronização' })
+  await dialog.getByText('title: UX remota').waitFor()
+  await shot('conflito')
+  await dialog.getByRole('button', { name: 'Usar a cópia' }).click()
+  await toast('Cópia adotada')
+  assert.match(await read('tags', tagFile), /title: UX remota/)
+  assert.deepEqual((await readdir(join(vault, 'tags'))).filter((n) => n !== tagFile), [], 'cópia promovida, sem sobras')
+  const trashedNow = await readdir(trashDir)
+  assert.equal(trashedNow.length, 1)
+  assert.equal(await readFile(join(trashDir, trashedNow[0]), 'utf8'), tagText, 'versão anterior recuperável na Lixeira')
+  await nav('Notas')
+  await page.getByRole('button', { name: 'Estudar design de serviços' }).click()
+  await page.getByRole('heading', { name: 'Backlinks' }).waitFor()
+
   step('fechar com alterações pendentes: Cancelar mantém; Descartar fecha')
   const beforeClose = sha(await read('notes/reading', readingFile))
   await page.locator('#body-editor').fill('rascunho não salvo')
@@ -234,7 +271,7 @@ try {
   assert.equal(sha(await read('notes/reading', readingFile)), beforeClose, 'descartar não gravou nada')
 
   step('reiniciar: dados persistidos e índices reconstruídos do disco')
-  session = await launch({ vault, userData })
+  session = await launch({ vault, userData, trash: trashDir })
   page = session.page
   await page.getByText('Visão geral · 1 itens · 2 notas · 2 grupos').waitFor({ timeout: 20000 })
   await nav('Notas')
@@ -255,4 +292,5 @@ try {
   await session.app.close().catch(() => {})
   await rm(vault, { recursive: true, force: true })
   await rm(userData, { recursive: true, force: true })
+  await rm(trashDir, { recursive: true, force: true })
 }

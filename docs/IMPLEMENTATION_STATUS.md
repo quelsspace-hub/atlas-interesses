@@ -4,7 +4,7 @@
 
 ## 1. Situação
 
-**Estado atual (§38):** V4 (grafo de conhecimento, D-030) implementada; testes 166/166 e E2E 12/12. **Antes (§37):** V3 (mapa visual, D-029) implementada; testes 163/163 e E2E 11/11. **Antes (§36):** V2 (busca global e catálogo de fontes, D-028) implementada; testes 160/160 e E2E 10/10. **Antes (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
+**Estado atual (§39):** V5 para Windows (sync por pasta, conflitos recuperáveis, backup automático, segurança, D-031) implementada; Android pendente; testes 171/171, E2E 13/13 no build e no executável empacotado. **Antes (§38):** V4 (grafo de conhecimento, D-030) implementada; testes 166/166 e E2E 12/12. **Antes (§37):** V3 (mapa visual, D-029) implementada; testes 163/163 e E2E 11/11. **Antes (§36):** V2 (busca global e catálogo de fontes, D-028) implementada; testes 160/160 e E2E 10/10. **Antes (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
 
 O estado registrado na consolidação de 18/10/2026 é preservado como proveniência. PoCs delimitadas executadas nos ambientes de 17–18/10 cobrem persistência de um registro, regras D-003/D-004, renomeação de Tag, reconstrução de backlinks, regra pura D-001 e criação de nova permanente em fixture (seção 12). Os recortes não representam entidades completas ou schema V1. Isso não conclui V0, não implementa o aplicativo e não aprova a stack. Tauri 2 + React + TypeScript continua candidata.
 
@@ -709,3 +709,47 @@ Comandos executados em `app/`. Resultados detalhados em [TEST_PLAN §22](TEST_PL
   - rótulos de nós ocultos abaixo de 50% de zoom (aparecem na dica, na seleção e ao aproximar);
   - E2E no executável empacotado não repetido nesta etapa.
 - **Roadmap:** V2 a V4 implementadas. A V5 (sync, offline, autenticação, conflitos, backup automático e Android) exige **arquitetura explícita** antes de código: escolha de serviço de sincronização, modelo de conflitos e conta. Será proposta em documento próprio antes de implementar.
+
+## 39. V5 — sync por pasta, conflitos, backup automático e segurança — 19/10/2026
+
+**Autorização:** a proprietária pediu para seguir para a V5, começando pela proposta de arquitetura e implementando o possível. Decisão D-031 e [PROPOSTA_V5_ARQUITETURA](PROPOSTA_V5_ARQUITETURA.md). Branch `feat/v5-sync`, criada sobre `feat/v4-graph`; as PRs #6 a #8 ainda estavam sem merge.
+
+- **Implementado:**
+  - `app/src/vault/repository.ts`: cópias de conflito reconhecidas pelo UUID no início do nome (Dropbox, Syncthing, Google Drive, OneDrive);
+  - `app/src/vault/sync.ts`: comparação, “manter atual” e “usar cópia”, sempre pela Lixeira e com verificação de revisão; rotação dos backups automáticos; indicação do provedor;
+  - `app/src/main/service.ts`:
+    - fila serial para operações do vault;
+    - a recuperação da Inbox ignora conversões em andamento neste processo;
+    - assinatura do disco e da memória;
+    - backup automático com resultado persistido;
+    - erros do IPC como objetos simples;
+  - `app/src/main/main.ts`:
+    - `fs.watch` recursivo com estabilização de 800 ms, que só avisa quando o disco difere do estado em memória;
+    - backup automático ao abrir e a cada hora;
+    - Lixeira do sistema (`shell.trashItem`), ou `ATLAS_TRASH_DIR` nos testes;
+  - **interface:**
+    - aviso e releitura quando o vault muda fora do app;
+    - seções Backup automático e Sincronização em Configurações;
+    - conflitos no Diagnóstico, com comparação lado a lado;
+    - conflitos contados no aviso da Visão geral;
+    - avisos reposicionados para não cobrir os diálogos.
+- **Sem mudança:** schema, contratos de vault e dependências.
+- **VERIFICADO (Windows 11 Pro 26200):**
+  - `npm test`: **171/171**, sendo 5 novos em `sync.test.ts`:
+    1. os quatro padrões de cópia são detectados, sem duplicar registros;
+    2. manter e usar, com as versões recuperáveis na Lixeira;
+    3. recusa quando a versão atual mudou ou a cópia é inválida;
+    4. backup automático a cada 24 h, com rotação só dos arquivos `atlas-auto-*` pela Lixeira, arquivo alheio intocado e bloqueio por transação pendente sem publicar;
+    5. indicação do provedor.
+  - `npm run e2e`: **13/13 jornadas**. A nova jornada 11 confere:
+    1. no renderer, `require` e `process` indefinidos e `fetch` externo recusado;
+    2. um título alterado no disco aparece na interface com o aviso;
+    3. uma cópia de conflito é resolvida com “Usar a cópia”: registro atualizado, sem sobras, versão anterior idêntica na Lixeira de teste.
+  - **Executável empacotado** (`electron-builder` com saída em `release/v5`): **13/13**; instalador de 107,7 MB.
+- **Ocorrência:** `release/win-unpacked/resources/app.asar` ficou bloqueado (EBUSY) sem nenhum processo do Atlas aberto, possivelmente por outro programa com a pasta aberta. O pacote foi gerado em `release/v5`, e nada foi apagado.
+- **Pendente:**
+  - **Android** (D-031 §8): sem SDK nem aparelho neste ambiente;
+  - teste com provedores reais (OneDrive, Dropbox) em dois aparelhos; as cópias foram simuladas pelos padrões de nome;
+  - E2E do backup automático pela interface: a escolha da pasta usa diálogo nativo; o motor está coberto pelos testes do serviço;
+  - aceite humano da V1 à V5.
+- **Roadmap:** V1 a V5 implementadas no Windows, exceto o Android da V5. Gates e aceite dependem da proprietária (D-012).

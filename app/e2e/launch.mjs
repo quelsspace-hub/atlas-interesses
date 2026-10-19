@@ -9,14 +9,14 @@ export async function tempDir(prefix) {
   return realpath(await mkdtemp(join(tmpdir(), prefix)))
 }
 
-export async function launch({ vault, userData }) {
+export async function launch({ vault, userData, trash }) {
   // ATLAS_E2E_EXE aponta para o executável empacotado (release/win-unpacked) em vez de 'electron .'.
   const exe = process.env.ATLAS_E2E_EXE
   const app = await electron.launch({
     ...(exe ? { executablePath: exe } : {}),
     args: exe ? [`--vault=${vault}`] : ['.', `--vault=${vault}`],
     cwd: fileURLToPath(new URL('..', import.meta.url)),
-    env: { ...process.env, ATLAS_USER_DATA: userData, ELECTRON_ENABLE_LOGGING: '1' }
+    env: { ...process.env, ATLAS_USER_DATA: userData, ELECTRON_ENABLE_LOGGING: '1', ...(trash ? { ATLAS_TRASH_DIR: trash } : {}) }
   })
   const page = await app.firstWindow()
   const errors = []

@@ -23,7 +23,7 @@ export function OverviewScreen() {
   const projects = index.items.filter((i) => i.metadata.type === 'project' && i.metadata.status === 'active')
   const pending = index.captures.filter((c) => c.metadata.status === 'pending')
   const recent = [...index.items, ...index.notes].sort((a, b) => String(b.metadata.updated_at).localeCompare(String(a.metadata.updated_at))).slice(0, 8)
-  const problems = snapshot.invalid.length + snapshot.recovery.filter((r) => r.outcome === 'blocked').length
+  const problems = snapshot.invalid.length + snapshot.recovery.filter((r) => r.outcome === 'blocked').length + snapshot.conflicts.length
 
   const capture = async () => {
     if (!text.trim()) return
@@ -45,7 +45,7 @@ export function OverviewScreen() {
 
       {problems > 0 && (
         <div className="banner danger" role="alert">
-          {problems} problema(s) no vault (arquivos inválidos ou conversões bloqueadas). Nada foi apagado. <Button small onClick={() => navigate({ screen: 'settings' })}>Ver diagnóstico</Button>
+          {problems} problema(s) no vault (arquivos inválidos, conflitos de sincronização ou conversões bloqueadas). Nada foi apagado. <Button small onClick={() => navigate({ screen: 'settings' })}>Ver diagnóstico</Button>
         </div>
       )}
 

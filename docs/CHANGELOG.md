@@ -1,5 +1,16 @@
 # Histórico de mudanças
 
+## 2026-10-19 — V5: sync por pasta, conflitos, backup automático e segurança
+
+- D-031 e PROPOSTA_V5_ARQUITETURA:
+  - sincronização pela pasta do provedor, sem servidor nem conta;
+  - observação do vault com releitura automática;
+  - cópias de conflito detectadas e resolvidas pela Lixeira, com verificação de revisão;
+  - backup automático diário verificado, com rotação pela Lixeira;
+  - verificação de segurança do renderer.
+- Android planejado e pendente.
+- Testes 171/171; E2E 13/13 no build e no executável empacotado. Detalhes em IMPLEMENTATION_STATUS §39 e TEST_PLAN §26.
+
 ## 2026-10-19 — V4: grafo de conhecimento
 
 - D-030:
