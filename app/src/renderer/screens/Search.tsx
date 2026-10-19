@@ -45,6 +45,16 @@ export function SearchScreen({ initialQuery }: { initialQuery?: string }) {
   const [includeArchived, setIncludeArchived] = useState(false)
   const input = useRef<HTMLInputElement>(null)
   useEffect(() => { input.current?.focus() }, [tab])
+  // Ctrl+K com a Busca já aberta: volta à aba de busca e devolve o foco ao campo (a tela não é remontada).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey || e.key.toLowerCase() !== 'k') return
+      setTab('search')
+      requestAnimationFrame(() => { input.current?.focus(); input.current?.select() })
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   // Índice descartável: reconstruído sempre que o índice do vault muda (D-028).
   const search = useMemo(() => (index ? buildSearchIndex(index) : null), [index])

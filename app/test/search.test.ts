@@ -28,6 +28,8 @@ test('fold e parseQuery: sem acento/caixa, frase exata e exclusão', () => {
   assert.equal(fold('Cerâmica ÇÃO'), 'ceramica cao')
   assert.deepEqual(parseQuery('Café "jornada do usuário" -arquivo'), { include: ['cafe', 'jornada do usuario'], exclude: ['arquivo'] })
   assert.deepEqual(parseQuery('   '), { include: [], exclude: [] })
+  assert.deepEqual(parseQuery('"design de'), { include: ['design de'], exclude: [] }, 'frase ainda sem aspa de fechamento')
+  assert.deepEqual(parseQuery('cafe "jornada do'), { include: ['cafe', 'jornada do'], exclude: [] })
 })
 
 test('busca no corpo e nos metadados, sem acento, com trecho do texto original', () => {

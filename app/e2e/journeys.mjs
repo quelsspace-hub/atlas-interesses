@@ -145,6 +145,12 @@ try {
   await page.locator('#global-search').fill('"texto do plano"')
   await results.getByRole('button', { name: 'Projeto E2E' }).waitFor()
   await results.getByText('Encontrado em: corpo').waitFor()
+  // Frase ainda sem aspa de fechamento já filtra; Ctrl+K com a Busca aberta devolve o foco ao campo.
+  await page.locator('#global-search').fill('"texto do')
+  await results.getByRole('button', { name: 'Projeto E2E' }).waitFor()
+  await page.getByRole('tab', { name: /Catálogo de fontes/ }).focus()
+  await page.keyboard.press('Control+k')
+  await page.locator('#global-search:focus').waitFor()
   await page.locator('#global-search').fill('servicos -sistema')
   await results.getByRole('button', { name: 'Estudar design de serviços' }).first().waitFor()
   assert.equal(await results.getByRole('button', { name: 'Serviços como sistema' }).count(), 0, 'exclusão com -termo')
