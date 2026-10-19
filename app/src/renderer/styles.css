@@ -208,6 +208,29 @@ textarea.editor { min-height: 360px; font-family: 'Cascadia Mono', Consolas, ui-
 .map-node .node-mark { fill: var(--text); font-size: 12px; font-weight: 700; pointer-events: none; }
 .map-node .node-label { fill: var(--text); font-size: 13px; pointer-events: none; paint-order: stroke; stroke: var(--surface-raised); stroke-width: 4px; }
 .map-node .node-label.group, .map-node .node-label.ungrouped { font-weight: 600; font-size: 15px; }
+/* Grafo V4 (D-030): traço distingue persistido (contínuo, com seta) de derivado (tracejados próprios). */
+.graph-edge { stroke-width: 2; fill: none; }
+.graph-edge.link { stroke: var(--primary); }
+:root[data-theme='dark'] .graph-edge.link { stroke: var(--primary-hover); }
+.graph-edge.context { stroke: #2E8B57; stroke-dasharray: 7 4; }
+.graph-edge.project { stroke: #B8761F; stroke-dasharray: 2 4; stroke-linecap: round; }
+.graph-edge.origin { stroke: var(--text-muted); stroke-dasharray: 10 4 2 4; }
+.graph-edge.tag { stroke: #7A3FB0; stroke-dasharray: 12 6; }
+.graph-edge.group { stroke: #2F6FB0; stroke-dasharray: 4 3; }
+.graph-edge.broken { stroke: var(--danger); stroke-dasharray: 3 3; }
+.graph-edge.on { stroke-width: 4; }
+.graph-edge.dim { opacity: 0.18; }
+.tag-toggle[aria-pressed='true'] .graph-edge.link, .tag-toggle[aria-pressed='true'] .graph-edge.origin { stroke: var(--on-primary); }
+.tag-toggle svg { background: transparent; border-radius: 3px; }
+.graph-arrow { fill: var(--primary); }
+:root[data-theme='dark'] .graph-arrow { fill: var(--primary-hover); }
+.graph-hit { cursor: pointer; }
+.graph-hit-line { stroke: transparent; stroke-width: 12; }
+.graph-node.focus .node-shape { fill: var(--primary); stroke: var(--primary); }
+.graph-node.focus .node-mark { fill: var(--on-primary); }
+.graph-node.missing .node-shape { stroke: var(--danger); stroke-dasharray: 3 3; }
+.graph-node.group .node-shape, .graph-node.tag .node-shape { fill: var(--surface-sunken); }
+.graph-suggest { position: absolute; top: 100%; left: 0; right: 0; z-index: 5; display: flex; flex-direction: column; gap: 2px; padding: 6px; }
 mark { background: color-mix(in srgb, var(--primary) 22%, transparent); color: inherit; border-radius: 3px; padding: 0 2px; }
 details > summary { list-style-position: inside; }
 .compare { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-m); }

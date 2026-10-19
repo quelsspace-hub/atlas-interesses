@@ -74,7 +74,10 @@ export function ItemScreen({ id }: { id: string }) {
           <BackButton fallback={{ screen: m.type === 'project' ? 'projects' : 'atlas' }} />
           <span className="row"><span className="badge">{LABELS.itemType[m.type]}</span>{archived && <span className="badge archived">Arquivado</span>}</span>
         </div>
-        <SaveBar editor={editor} />
+        <div className="row">
+          <Button onClick={() => navigate({ screen: 'graph', id })}>Ver no grafo</Button>
+          <SaveBar editor={editor} />
+        </div>
       </div>
       {archived && <div className="banner">Este item está arquivado: fica fora das listas padrão, mas continua no vault e suas referências continuam válidas. <Button small onClick={() => setUnarchiving(true)}>Recuperar</Button></div>}
       <div className="detail">

@@ -112,7 +112,7 @@ export function Modal({ title, onClose, children, actions, wide }: { title: stri
   )
 }
 
-const SCREEN_LABEL: Record<string, string> = { overview: 'Visão geral', inbox: 'Inbox', atlas: 'Atlas', projects: 'Projetos', group: 'Grupo', item: 'Item', tasks: 'Tarefas', notes: 'Notas', note: 'Nota', organization: 'Organização', search: 'Busca', map: 'Mapa', settings: 'Configurações' }
+const SCREEN_LABEL: Record<string, string> = { overview: 'Visão geral', inbox: 'Inbox', atlas: 'Atlas', projects: 'Projetos', group: 'Grupo', item: 'Item', tasks: 'Tarefas', notes: 'Notas', note: 'Nota', organization: 'Organização', search: 'Busca', map: 'Mapa', graph: 'Grafo', settings: 'Configurações' }
 
 // Volta à tela anterior (retorno ao contexto, D-029); sem histórico, vai para `fallback`.
 export function BackButton({ fallback }: { fallback: Route }) {

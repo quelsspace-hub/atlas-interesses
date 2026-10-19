@@ -4,7 +4,7 @@
 
 ## 1. Situação
 
-**Estado atual (§37):** V3 (mapa visual, D-029) implementada; testes 163/163 e E2E 11/11. **Antes (§36):** V2 (busca global e catálogo de fontes, D-028) implementada; testes 160/160 e E2E 10/10. **Antes (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
+**Estado atual (§38):** V4 (grafo de conhecimento, D-030) implementada; testes 166/166 e E2E 12/12. **Antes (§37):** V3 (mapa visual, D-029) implementada; testes 163/163 e E2E 11/11. **Antes (§36):** V2 (busca global e catálogo de fontes, D-028) implementada; testes 160/160 e E2E 10/10. **Antes (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
 
 O estado registrado na consolidação de 18/10/2026 é preservado como proveniência. PoCs delimitadas executadas nos ambientes de 17–18/10 cobrem persistência de um registro, regras D-003/D-004, renomeação de Tag, reconstrução de backlinks, regra pura D-001 e criação de nova permanente em fixture (seção 12). Os recortes não representam entidades completas ou schema V1. Isso não conclui V0, não implementa o aplicativo e não aprova a stack. Tauri 2 + React + TypeScript continua candidata.
 
@@ -673,3 +673,34 @@ Comandos executados em `app/`. Resultados detalhados em [TEST_PLAN §22](TEST_PL
   - vault com centenas de itens por grupo, que forma arcos externos e não foi medido visualmente;
   - E2E no executável empacotado não repetido nesta etapa.
 - **Próximo no roadmap:** V4, grafo de links e relações derivadas, claramente distinguidos, com limites para conjuntos grandes.
+
+## 38. V4 — grafo de conhecimento — 19/10/2026
+
+**Autorização:** a proprietária pediu para seguir para a V4 com as mesmas regras. Decisão D-030. Branch `feat/v4-graph`, criada sobre `feat/v3-map`; as PRs #6 e #7 ainda estavam sem merge.
+
+- **Implementado:**
+  - `app/src/domain/graph.ts`: relações persistidas e derivadas com explicação, links quebrados, foco e profundidade, limite de nós, layout em anéis (com foco) ou por forças determinístico (global);
+  - `app/src/renderer/screens/Graph.tsx`:
+    - zoom e pan por mouse e teclado;
+    - foco por busca e “Focar aqui”;
+    - profundidade de 1 a 3;
+    - tipos de relação com legenda de traço;
+    - painel de nó e de aresta com a explicação;
+    - aviso de limite e “Ver como lista”;
+  - “Ver no grafo” no Item e na Nota; entrada Grafo na sidebar e Alt+9.
+- **Sem mudança:** schema, contratos e dependências.
+- **VERIFICADO (Windows 11 Pro 26200):**
+  - `npm test`: **166/166**, sendo 3 novos em `graph.test.ts`;
+  - `npm run e2e`: **12/12 jornadas**. A nova jornada 10:
+    1. abre o grafo pela nota;
+    2. confere o painel com a explicação do link persistido;
+    3. na lista, confere “Link no texto” como persistido e a origem na captura como derivada;
+    4. confere que o SHA-256 de todos os arquivos do vault não muda;
+  - layout de 150 nós (de 306 candidatos) em 126 ms;
+  - **inspeção visual:** vault fictício com 4 projetos, 8 tarefas, 18 notas e links quebrados; ajuste a 38%, com os tracejados distinguíveis.
+- **Pendente:**
+  - usabilidade com a proprietária;
+  - leitor de tela no SVG;
+  - rótulos de nós ocultos abaixo de 50% de zoom (aparecem na dica, na seleção e ao aproximar);
+  - E2E no executável empacotado não repetido nesta etapa.
+- **Roadmap:** V2 a V4 implementadas. A V5 (sync, offline, autenticação, conflitos, backup automático e Android) exige **arquitetura explícita** antes de código: escolha de serviço de sincronização, modelo de conflitos e conta. Será proposta em documento próprio antes de implementar.

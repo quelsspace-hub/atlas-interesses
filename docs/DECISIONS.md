@@ -272,3 +272,28 @@ Registre problema, alternativa, impacto sobre arquivos existentes, migração, t
   - biblioteca de grafos com simulação de forças: não determinística, mais pesada, e o mapa mudaria a cada abertura;
   - canvas com posições livres persistidas: adiado, porque exigiria um novo artefato de dados.
 - **Testes:** `app/test/map.test.ts`, jornada E2E 9 e TEST_PLAN §24.
+
+## D-030 — V4: grafo de conhecimento
+
+- **DECIDIDO em 19/10/2026** por delegação da proprietária.
+- **Problema:** o roadmap pede, para a V4, um grafo de links e relações derivadas claramente distinguidos, com limites para conjuntos grandes. O critério da documentação oficial é “relações explicáveis e navegação controlada”.
+- **Relações persistidas:** links Markdown escritos no corpo (D-009). Linha contínua com seta.
+- **Relações derivadas,** calculadas dos metadados, cada uma com o seu tracejado:
+  - contexto (`context_item_id`);
+  - tarefa do projeto (`project_id`);
+  - origem na captura (`origin_capture_id`);
+  - tag (`tag_ids`);
+  - grupo (OR de tags, D-004).
+- **Distinção:** traço, legenda e texto, não só cor (D-026). Por padrão ficam ligados link, contexto, projeto e origem; tag e grupo ficam desligados para não saturar.
+- **Explicação:** cada aresta tem um texto que diz por que existe (qual link, qual campo, quais tags compartilhadas), mostrado na dica, no painel e na lista. Links quebrados aparecem como nó “Ausente” em vermelho, sem apagar nada.
+- **Navegação controlada:**
+  - foco num registro, com profundidade de 1 a 3 saltos, em anéis concêntricos;
+  - visão global por forças, com semente derivada do UUID e número fixo de iterações, portanto determinística;
+  - limite de 150 nós, priorizando proximidade do foco e grau, com aviso de quantos ficaram de fora e como ver o restante;
+  - atalhos “Ver no grafo” no Item e na Nota; “Focar aqui” no painel.
+- **Somente leitura:** nada é persistido (D-011). A alternativa em lista mostra as relações por tipo, com explicação.
+- **Alternativas rejeitadas:**
+  - biblioteca de grafos externa: dependência maior, layout não determinístico;
+  - grafo sem limite: ilegível e lento em vaults grandes;
+  - persistir relações derivadas: duplicaria dados que já estão no YAML.
+- **Testes:** `app/test/graph.test.ts`, jornada E2E 10 e TEST_PLAN §25.

@@ -57,7 +57,7 @@ Não adiar provas críticas de backup para o passo 9: sua viabilidade pertence �
 
 - **V2:** busca global no corpo e metadados; filtros combináveis; catálogo de fontes se necessário. Índice descartável. **Implementada em 19/10/2026 (D-028; IMPLEMENTATION_STATUS §36).**
 - **V3:** mapa visual sobre entidades existentes; zoom/pan, filtros, retorno ao contexto e alternativa em listas. **Implementada em 19/10/2026 (D-029; IMPLEMENTATION_STATUS §37).**
-- **V4:** grafo de links e relações derivadas claramente distinguidos; limites para conjuntos grandes.
+- **V4:** grafo de links e relações derivadas claramente distinguidos; limites para conjuntos grandes. **Implementada em 19/10/2026 (D-030; IMPLEMENTATION_STATUS §38).**
 - **V5:** arquitetura explícita de sync, offline, autenticação, conflitos, backup automático e Android.
 
 Cada versão tem tarefa, critérios, testes e aceite próprios. Não antecipar recursos futuros por disponibilidade de biblioteca.
