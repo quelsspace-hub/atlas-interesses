@@ -156,6 +156,7 @@ export function NoteScreen({ id }: { id: string }) {
           <span className="row"><span className="badge">{LABELS.noteType[m.note_type]}</span>{m.archived_at && <span className="badge archived">Arquivada</span>}</span>
         </div>
         <div className="row">
+          <Button onClick={() => navigate({ screen: 'graph', id })}>Ver no grafo</Button>
           {m.note_type !== 'permanent' && <Button onClick={() => setPermanent(true)}>Criar nota permanente a partir desta</Button>}
           <SaveBar editor={editor} />
         </div>

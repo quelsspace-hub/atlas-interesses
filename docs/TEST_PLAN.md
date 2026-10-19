@@ -726,3 +726,31 @@ Ambiente idêntico ao §22. Comandos em `app/`: `npm test` e `npm run e2e`.
 - leitor de tela;
 - gestos de toque;
 - conjuntos muito grandes (centenas de itens por grupo).
+
+## 25. V4 — grafo de conhecimento (19/10/2026)
+
+Ambiente idêntico ao §22. Comandos em `app/`: `npm test` e `npm run e2e`.
+
+**`graph.test.ts`, 3/3:**
+
+1. **Persistidas, derivadas e quebradas:**
+   - link persistido com explicação “escrito no corpo de …”, nos dois sentidos (D-008);
+   - contexto, projeto e origem derivados, com o campo citado na explicação;
+   - link quebrado como nó `missing`;
+   - nota isolada fora da vista global;
+   - tag e grupo desligados por padrão.
+2. **Tag e grupo:** a explicação do grupo cita as tags compartilhadas (OR); nenhuma dessas relações é marcada como persistida.
+3. **Navegação controlada:**
+   - foco no centro;
+   - profundidade 1 com exatamente os vizinhos; profundidade 2 alcança a tarefa e a captura;
+   - 306 candidatos limitados a 150, com `truncated`, sem arestas soltas, layout determinístico e finito, em 126–148 ms.
+
+**Suíte completa:** 166/166.
+
+**E2E:** 12/12. Jornada 10 (V4): foco pela nota, painel com a explicação, lista por tipo (persistido × derivado) e hash do vault inalterado.
+
+**Não coberto:**
+
+- leitor de tela;
+- vault real com milhares de links;
+- gestos de toque.

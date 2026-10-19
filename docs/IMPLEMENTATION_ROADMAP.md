@@ -1,6 +1,6 @@
 # Roadmap de implementação
 
-**Estado:** prova técnica V0 em andamento. PoCs locais delimitadas foram executadas em 17–18/10/2026 (persistência, D-003/D-004, Tag, links/backlinks, D-001 e nova permanente; ver §2.1 e [status](IMPLEMENTATION_STATUS.md)); isso não conclui V0. O restante do roadmap descreve etapas propostas, não código existente.
+**Estado (19/10/2026):** aplicativo V1 implementado em `app/` (D-017), e V2 a V4 implementadas (D-028 a D-030); as linhas do §5 indicam cada uma. As etapas sem essa marcação continuam propostas. Gates e aceite dependem da proprietária (D-012). *Redação anterior: “prova técnica V0 em andamento. PoCs locais delimitadas foram executadas em 17–18/10/2026 [...]; isso não conclui V0. O restante do roadmap descreve etapas propostas, não código existente.”*
 
 ## 1. Fechar decisões por etapa
 
@@ -57,7 +57,7 @@ Não adiar provas críticas de backup para o passo 9: sua viabilidade pertence �
 
 - **V2:** busca global no corpo e metadados; filtros combináveis; catálogo de fontes se necessário. Índice descartável. **Implementada em 19/10/2026 (D-028; IMPLEMENTATION_STATUS §36).**
 - **V3:** mapa visual sobre entidades existentes; zoom/pan, filtros, retorno ao contexto e alternativa em listas. **Implementada em 19/10/2026 (D-029; IMPLEMENTATION_STATUS §37).**
-- **V4:** grafo de links e relações derivadas claramente distinguidos; limites para conjuntos grandes.
+- **V4:** grafo de links e relações derivadas claramente distinguidos; limites para conjuntos grandes. **Implementada em 19/10/2026 (D-030; IMPLEMENTATION_STATUS §38).**
 - **V5:** arquitetura explícita de sync, offline, autenticação, conflitos, backup automático e Android.
 
 Cada versão tem tarefa, critérios, testes e aceite próprios. Não antecipar recursos futuros por disponibilidade de biblioteca.

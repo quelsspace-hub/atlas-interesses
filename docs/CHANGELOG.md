@@ -1,5 +1,16 @@
 # Histórico de mudanças
 
+## 2026-10-19 — V4: grafo de conhecimento
+
+- D-030:
+  - grafo somente leitura com links persistidos (contínuos, com seta) e relações derivadas (contexto, projeto, origem, tag, grupo, cada uma com tracejado próprio);
+  - explicação de cada relação;
+  - links quebrados visíveis;
+  - foco e profundidade, limite de 150 nós com aviso;
+  - lista equivalente;
+  - “Ver no grafo” em itens e notas.
+- Testes 166/166; E2E 12/12. Detalhes em IMPLEMENTATION_STATUS §38 e TEST_PLAN §25.
+
 ## 2026-10-19 — V3: mapa visual
 
 - D-029:
