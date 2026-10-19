@@ -66,7 +66,7 @@ Contexto: arquivos abertos podem ser editados por outras ferramentas e mudar de 
 
 ## ADR-008 — Stack V1
 
-**Estado:** CANDIDATA, decisão pendente da PoC.
+**Estado:** DECIDIDA em 19/10/2026 por delegação da proprietária: **Electron + React + TypeScript** ([D-017](DECISIONS.md)); Tauri 2 não escolhida, por exigir reescrever em Rust a persistência e o backup já provados. Prova nativa registrada em [IMPLEMENTATION_STATUS §35](IMPLEMENTATION_STATUS.md). *Estado anterior: CANDIDATA, decisão pendente da PoC.*
 
 Tauri 2 + React + TypeScript oferece UI web e acesso nativo potencialmente multiplataforma. Provar filesystem, permissões, fechamento, reinício, empacotamento e consumo. Comparar com PWA/filesystem e outra solução local somente se a candidata não atender requisitos. Banco remoto como fonte canônica altera princípio e exige decisão de produto.
 

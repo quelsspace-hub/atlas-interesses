@@ -1,6 +1,6 @@
 # Especificação funcional da V1
 
-**Estado:** requisitos consolidados; implementação não iniciada. Decisões em [DECISIONS.md](DECISIONS.md); contratos ainda propostos em [DATA_MODEL.md](DATA_MODEL.md).
+**Estado:** requisitos consolidados; implementados no aplicativo V1 em `app/` (19/10/2026, [IMPLEMENTATION_STATUS §35](IMPLEMENTATION_STATUS.md)); aceite da proprietária pendente. *Estado anterior: implementação não iniciada.* Decisões em [DECISIONS.md](DECISIONS.md); contratos ainda propostos em [DATA_MODEL.md](DATA_MODEL.md).
 
 ## 1. Escopo e forma de aceite
 

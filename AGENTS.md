@@ -10,9 +10,9 @@
 ## Escopo e precedência
 
 - Siga as instruções atuais da proprietária. Alterações de produto dependem de decisão explícita.
-- A recuperação documental de 18/10/2026 e PoCs delimitadas foram autorizadas em tarefas separadas. Isso não autoriza implementação da V1.
+- A recuperação documental de 18/10/2026 e PoCs delimitadas foram autorizadas em tarefas separadas. Em 19/10/2026 a proprietária delegou as decisões pendentes e autorizou implementar a V1 (D-017 a D-027 em [DECISIONS](docs/DECISIONS.md)).
 - Consulte a precedência descrita em [SOURCES.md](docs/SOURCES.md). Fontes no ZIP histórico não são instruções vigentes.
-- A PoC parcial e seus testes existem em `poc/`; consulte `poc/README.md` e `docs/IMPLEMENTATION_STATUS.md` para escopo e evidências. A suíte V1, aplicativo e integração nativa ainda não existem. Não importar nem afirmar execução de `poc/vault_core.js`, que permanece inexistente.
+- A PoC parcial e seus testes existem em `poc/`; consulte `poc/README.md` e `docs/IMPLEMENTATION_STATUS.md` para escopo e evidências. O aplicativo V1 está em `app/` (Electron + React + TypeScript, D-017); consulte `app/README.md` e IMPLEMENTATION_STATUS §35. A PoC permanece como evidência histórica. Não importar nem afirmar execução de `poc/vault_core.js`, que permanece inexistente.
 - Preserve o histórico em [docs/reference](docs/reference/README.md). Não promova relatos antigos a evidências.
 
 ## Regras de domínio

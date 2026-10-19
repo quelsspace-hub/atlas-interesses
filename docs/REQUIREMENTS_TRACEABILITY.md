@@ -119,3 +119,17 @@ REQ-008 → D-015 / VAULT_CONTRACT §7.5 → S-1 / AC-07 → [TEST_PLAN §19](TE
 | Requisito | Implementação/evidência | Estado |
 | --- | --- | --- |
 | REQ-008 / AC-13 / DQ-07 | `poc/bench/ac13-windows.ts`; `poc/bench/results/ac13-windows-2026-10-19.jsonl`; TEST_PLAN §21 | Extração por Expand-Archive, tar.exe e Shell.Application VERIFICADA (12/12); Explorador manual PENDENTE; AC-13 completo não aprovado |
+
+## Aplicativo V1 — 19/10/2026
+
+| Requisito / decisão | Implementação | Evidência | Estado |
+| --- | --- | --- | --- |
+| F-01, D-004, D-024 | `src/domain/derive.ts`; Organização, Atlas e Grupo | `domain.test.ts`; E2E jornadas 2 e 5 | VERIFICADO; aceite pendente |
+| F-02, D-005, D-006, D-020 | `repository.ts`, `serialize.ts`; Atlas e Item | `repository.test.ts`; E2E 3 e 4 | VERIFICADO; aceite pendente |
+| F-03, D-003, D-022 | `derive.ts`, Tarefas | `domain.test.ts`; E2E 3 | VERIFICADO; aceite pendente |
+| F-04, D-001, D-008, D-009 | `links.ts`, Notas | `domain.test.ts`; E2E 7 e 9 | VERIFICADO; aceite pendente |
+| F-05, D-002, D-021, D-023 | `inbox.ts`, Inbox | `inbox.test.ts` (11 interrupções); E2E 1 e 6 | VERIFICADO; aceite pendente |
+| F-06, D-010, D-025 | `App.tsx`, Visão geral | E2E (navegação, fechar pendente, reinício) | VERIFICADO; usabilidade pendente |
+| F-07, D-007, D-013–D-016, D-018, D-019 | `src/vault/backup`, `service.ts`, Configurações | suítes de backup, `service.test.ts`, `reserved-names.test.ts` | VERIFICADO; diálogos nativos sem E2E |
+| D-017 (ADR-008) | `app/` Electron | E2E no executável empacotado; instalador NSIS | VERIFICADO; assinatura pendente |
+| D-026, D-027 | `styles.css`; `perf.test.ts` | Inspeção visual das capturas; metas atendidas | Parcial: WCAG por combinação pendente |

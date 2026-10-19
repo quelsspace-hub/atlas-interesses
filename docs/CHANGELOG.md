@@ -1,5 +1,19 @@
 # Histórico de mudanças
 
+## 2026-10-19 — Aplicativo V1 (Electron) e decisões delegadas
+
+- Decisões D-017 a D-027 tomadas por delegação da proprietária: stack Electron + React + TS; S-1 128:1; nomes reservados; Q-01 a Q-10. ADR-008 decidida.
+- Novo `app/`:
+  - núcleo da PoC adaptado e repositório V1;
+  - transação recuperável da Inbox;
+  - domínio puro;
+  - sete telas, mais Configurações e backup;
+  - E2E com playwright-core;
+  - instalador NSIS;
+  - job de CI.
+- Verificado: 154/154 testes; 9/9 jornadas E2E, no build e no executável empacotado; metas da D-027 atendidas. Detalhes em IMPLEMENTATION_STATUS §35 e TEST_PLAN §22.
+- README da raiz regravado em UTF-8: a linha final em UTF-16 do primeiro commit foi removida. AGENTS, guia do Cursor, contratos e rastreabilidade atualizados.
+
 ## 2026-10-19 — CI no GitHub Actions
 
 - Novo `.github/workflows/ci.yml`: em PR, push na `main` e execução manual, roda `npm ci` e `npm test` em `poc/` num runner `windows-latest`. Casos pesados ficam fora. Sem mudança em código, contratos, manifestos ou lockfile.

@@ -29,3 +29,22 @@ jobs:
           cache-dependency-path: poc/package-lock.json
       - run: npm ci --no-audit --no-fund
       - run: npm test
+
+  # Aplicativo V1 (D-017): typecheck, testes de núcleo/domínio/backup, build e jornadas E2E no Electron real.
+  app-tests:
+    name: App — testes, build e E2E (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.22.0
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npm run e2e

@@ -596,3 +596,65 @@ Em todos os 12 registros: código 0, nenhum arquivo ausente, extra ou divergente
 - Só ZIPs do exportador Atlas (store). ZIPs externos ou deflate não foram extraídos pelos componentes do Windows nesta etapa.
 - Uma máquina; antivírus/energia não controlados. Não valida permissões ou GUI nativas (AC-12, AC-18).
 - Nenhuma incompatibilidade observada: esta evidência não dá motivo para reabrir DQ-07.
+
+## 22. Aplicativo V1 — testes, E2E e desempenho (19/10/2026)
+
+**Ambiente:**
+
+- Windows 11 Pro build 26200, x64, NTFS;
+- Electron `44.9.0`, que embute Node `24.22.0` e Chromium `152.0.7977.167`;
+- testes no Node `24.22.0` (`node-win-x64`), npm `10.8.2` e `playwright-core` `1.64.1`.
+
+Comandos em `app/`:
+
+```powershell
+npm ci
+npm test
+npm run build
+node e2e/journeys.mjs
+$env:ATLAS_E2E_EXE = "$PWD\release\win-unpacked\Atlas de Interesses.exe"; node e2e/journeys.mjs
+```
+
+**Resultado:** `npm test` terminou com código 0 e **154/154**. As suítes:
+
+| Suíte | O que cobre |
+| --- | --- |
+| Backup herdado da PoC (`backup-*.test.ts`) | AC-01–AC-17 e AC-13 leve sobre a cópia do núcleo dentro do app |
+| `domain.test.ts` | Enums, D-001, datas, D-003/D-022 (50% e null), OR em dois grupos, notas por tema (D-024), links e backlinks |
+| `repository.test.ts` | Estilo YAML dos exemplos; round-trip; D-006 com LF, CRLF e sem newline final; campos desconhecidos; CRLF em edição do corpo; conflito externo; referências inválidas; vault de exemplo sem inválidos (50%, dois grupos, backlinks) |
+| `inbox.test.ts` | Conversão completa; interrupção após cada uma das 11 etapas e recuperação: descarte com captura pendente ou conclusão sem duplicatas; segunda reconciliação sem mudança; destino alheio bloqueia; nota com `origin_capture_id` |
+| `reserved-names.test.ts` | D-019 nas duas direções; D-018 = 128 |
+| `service.test.ts` | Exportar → pré-visualizar → restaurar em pasta nova → reabrir com revisões SHA-256 iguais; sobreposição com o vault recusada; nome repetido não sobrescreve; preferências fora do vault; transação pendente bloqueia a exportação |
+| `perf.test.ts` | D-027 |
+
+**E2E (`e2e/journeys.mjs`):** 9/9 jornadas, no `electron .` e no executável empacotado. Cada uma confere os arquivos no disco:
+
+1. captura rápida;
+2. tag em dois grupos;
+3. projeto com tarefas e progresso 50%;
+4. Ctrl+S com corpo preservado byte a byte e edição explícita do corpo;
+5. item em dois grupos sem duplicar arquivo;
+6. processamento da captura em nota (captura processada, conteúdo preservado, sem manifesto residual);
+7. nota permanente com origem com o mesmo SHA-256 e backlink;
+8. fechar com alterações pendentes: Cancelar mantém, Descartar fecha sem gravar;
+9. reinício com dados e backlinks reconstruídos do disco, sem erros no console do renderer.
+
+**Desempenho (D-027), três execuções:**
+
+| Medida | Resultado | Meta |
+| --- | --- | --- |
+| Indexação de 1.000 registros | 814, 713 e 979 ms | ≤ 2 s |
+| Salvamento de metadados, mediana | 5,6, 5,5 e 7,1 ms | ≤ 200 ms |
+| Salvamento de metadados, máximo | 11,8, 29 e 14,1 ms | — |
+| RSS do processo de teste | 73–74 MiB | — |
+
+O processo de teste não é o aplicativo; a medida não inclui a janela do Electron.
+
+**Não coberto:**
+
+- diálogos nativos de pasta e arquivo no E2E;
+- disco cheio real e permissões NTFS negadas pela interface;
+- leitor de tela e auditoria WCAG por combinação;
+- abertura manual do AC-13 no Explorador.
+
+Nenhum TC completo, gate ou aceite da V1 é declarado por estes resultados (D-012).

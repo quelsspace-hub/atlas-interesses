@@ -7,6 +7,9 @@ import type { ConversionOutput, Result, ThemePreference } from '../shared/api.js
 // Processo principal (D-017). O renderer roda isolado (contextIsolation + sandbox) e só fala por IPC.
 let window: BrowserWindow | null = null
 let allowClose = false
+// ATLAS_USER_DATA isola as preferências do dispositivo (testes E2E); --vault=<pasta> abre um vault ao iniciar.
+if (process.env.ATLAS_USER_DATA) app.setPath('userData', process.env.ATLAS_USER_DATA)
+const vaultArg = process.argv.find((a) => a.startsWith('--vault='))?.slice('--vault='.length)
 const service = new AtlasService(app.getPath('userData'), app.getVersion())
 
 function applyTheme(theme: ThemePreference): void {
@@ -133,6 +136,9 @@ else {
   void app.whenReady().then(async () => {
     Menu.setApplicationMenu(null)
     await service.init()
+    if (vaultArg) {
+      try { await service.activate(vaultArg, false) } catch (error) { dialog.showErrorBox('Atlas de Interesses', `Não foi possível abrir o vault: ${(error as Error).message}`) }
+    }
     applyTheme(service.state().theme)
     registerIpc()
     createWindow()

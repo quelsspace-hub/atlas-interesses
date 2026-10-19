@@ -1,10 +1,10 @@
 # Status real do Atlas
 
-**Atualização registrada:** 19/10/2026 · **Execução mais recente:** 19/10/2026 no Windows 11 (§33) · **Etapa:** PoC local parcial, incluindo backup/restauração, limites D-015 e validação automática de ZIP64 (AC-13; §29) e extração pelos componentes do Windows 11 (§33).
+**Atualização registrada:** 19/10/2026 · **Execução mais recente:** 19/10/2026 no Windows 11 (§35, aplicativo V1) · **Etapa:** PoC local parcial, incluindo backup/restauração, limites D-015 e validação automática de ZIP64 (AC-13; §29) e extração pelos componentes do Windows 11 (§33).
 
 ## 1. Situação
 
-**Estado atual:** suíte principal com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
+**Estado atual (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
 
 O estado registrado na consolidação de 18/10/2026 é preservado como proveniência. PoCs delimitadas executadas nos ambientes de 17–18/10 cobrem persistência de um registro, regras D-003/D-004, renomeação de Tag, reconstrução de backlinks, regra pura D-001 e criação de nova permanente em fixture (seção 12). Os recortes não representam entidades completas ou schema V1. Isso não conclui V0, não implementa o aplicativo e não aprova a stack. Tauri 2 + React + TypeScript continua candidata.
 
@@ -42,7 +42,7 @@ As seis regras auditadas estão confirmadas e não são pendências: Item.status
 
 ## 5. Próximo passo
 
-**Atualização (§33, 19/10/2026):** extração Windows automatizada concluída (12/12); restam a abertura manual no Explorador e as decisões listadas no §33. **Atualização anterior de 19/10/2026:** concluir a comprovação de compatibilidade ZIP64 no Windows 11 (§29). Em seguida, propor a composição F-2.v1 para aprovação, medir amostras legítimas comprimíveis e F-3 maliciosas, e submeter o valor S-1 antes de implementar a razão de compressão do AC-07. Inbox depende de Q-01/Q-02/Q-04; nenhuma mudança estrutural dessa etapa foi iniciada. Os parágrafos abaixo preservam a sequência histórica.
+**Atualização (§35, 19/10/2026):** V1 implementada em `app/`. O que resta está no §35, em “Pendente”. **Atualização (§33, 19/10/2026):** extração Windows automatizada concluída (12/12); restam a abertura manual no Explorador e as decisões listadas no §33. **Atualização anterior de 19/10/2026:** concluir a comprovação de compatibilidade ZIP64 no Windows 11 (§29). Em seguida, propor a composição F-2.v1 para aprovação, medir amostras legítimas comprimíveis e F-3 maliciosas, e submeter o valor S-1 antes de implementar a razão de compressão do AC-07. Inbox depende de Q-01/Q-02/Q-04; nenhuma mudança estrutural dessa etapa foi iniciada. Os parágrafos abaixo preservam a sequência histórica.
 
 Aguardar a revisão da proprietária desta etapa delimitada. Nenhuma etapa adicional, integração nativa ou implementação do aplicativo está autorizada por esta entrega.
 
@@ -565,3 +565,63 @@ A proposta separa requisitos DECIDIDOS/ESPECIFICADOS de recomendações técnica
 - **Primeiro run (39294547302):** FALHOU, 161/172. Causa: no runner, `TEMP` usa nome curto 8.3 (`C:\Users\RUNNER~1\...`); exportador e restaurador relatam o destino pelo caminho real (`runneradmin`), conforme o contrato, mas 11 testes de `backup-export` e `backup-restore` comparavam com o caminho não resolvido. Não é defeito do produto.
 - **Correção (commit `67f2ff0`):** os helpers `workspace()` desses dois arquivos de teste passam a usar `realpath(mkdtemp(...))`. Nenhum código de `src/` alterado. Reproduzido localmente com `TEMP`/`TMP` apontando para um caminho 8.3: 161/172 antes e **172/172** depois; `npm test` normal, 172/172.
 - **Segundo run (39295018674, commit `67f2ff0`):** PASSOU. `npm ci` instalou 19 pacotes; runtime `v24.22.0`; typecheck/build e **172/172** testes, 0 falhas/pulados. Este registro documental não altera o código verificado por esse run.
+
+## 35. Aplicativo V1 (Electron) — 19/10/2026
+
+**Autorização:** a proprietária pediu para retomar a criação do projeto e delegou as decisões e autorizações pendentes (“pode implementar direto da forma que pensar ser melhor”). Decisões registradas como D-017 a D-027 em [DECISIONS](DECISIONS.md). Branch `feat/v1-app-foundation`, empilhada sobre as PRs #2 e #3; o merge delas foi bloqueado pela política de permissões da sessão e fica com a proprietária.
+
+### 35.1 Implementado
+
+- **Stack (D-017):** Electron `44.9.0`, que embute Node `24.22.0`; React `19.3.1`, Vite `8.3.4`, TypeScript `7.0.2`, esbuild `0.28.2`; Lucide e Inter (`@fontsource`, OFL). O renderer roda com `contextIsolation`, `sandbox` e CSP, sem `nodeIntegration`, e acessa o disco só pela API IPC tipada do preload.
+- **Núcleo (`app/src/vault`):** cópia de `poc/src` no commit `2dc0726` (persistência, adaptador e backup verificados), com quatro mudanças:
+  - `record.ts` grava bytes completos e deixa a validação de campos para o domínio, porque a captura pode ter `title: null`;
+  - padrão S-1 128:1 aplicado pelo serviço (D-018);
+  - recusa de nomes reservados, finais com espaço ou ponto e `<>:"|?*` (D-019) em `manifest.ts`;
+  - módulos experimentais da PoC removidos.
+- **Repositório (`repository.ts`):** valida todas as entidades do schema 1 (D-020).
+  - Arquivo inválido gera diagnóstico e não é regravado; temporários e manifestos são listados, nunca apagados.
+  - Referências ausentes geram aviso; UUID e `note_type` são imutáveis.
+  - Edição só de YAML anexa os bytes originais do corpo (D-006).
+  - Conflito externo é devolvido com a versão do disco, sem sobrescrever.
+- **Inbox (`inbox.ts`):** manifesto `inbox/.txn_{id}.json`, com as etapas INIT → TMP_WRITTEN → FILES_RENAMED → INBOX_UPDATED.
+  - Promoção por hard link, sem substituir destino alheio; cópia exclusiva como alternativa.
+  - Recuperação no arranque.
+  - Se nenhum destino foi promovido e faltam temporários, a conversão é descartada e a captura continua pendente (D-023). Destino com conteúdo divergente bloqueia e mantém o manifesto.
+- **Domínio (`src/domain`):** validação, OR, progresso (D-003 + D-022), D-001, links relativos e backlinks com markdown-it, além de `success_criteria` e defaults de criação (D-020).
+- **Interface:** sidebar com Visão geral (hub e captura rápida), Inbox, Atlas, Projetos (filtro), Tarefas, Notas, Organização e Configurações e backup (D-025). Inclui:
+  - salvamento explícito e Ctrl+S, com estados salvo, alterado, salvando, erro e conflito;
+  - fechar com alterações pendentes oferece Salvar, Descartar ou Cancelar;
+  - atalhos Alt+1–6;
+  - tema que segue o SO, com escolha manual Light/Dark (D-026);
+  - prévia de impacto ao retirar tag de grupo, aviso de títulos duplicados e seção “Sem grupo”;
+  - nota permanente a partir de outra nota (D-008), seletor de links, backlinks, links quebrados marcados e anexos em `assets/` (D-027);
+  - exportação com inventário e restauração em pasta nova, com relatório.
+- **Empacotamento:** `electron-builder` `26.15.3`, NSIS x64 sem assinatura de código. `Atlas de Interesses Setup 0.1.0.exe` tem 107,6 MB; o executável desempacotado ocupa 371,7 MB.
+- **CI:** novo job `app-tests` em `.github/workflows/ci.yml` (`npm ci`, `npm test`, `npm run e2e` em `windows-latest`). Ainda não executado no GitHub.
+
+### 35.2 Verificado (Windows 11 Pro 26200, x64, NTFS)
+
+Comandos executados em `app/`. Resultados detalhados em [TEST_PLAN §22](TEST_PLAN.md).
+
+- `npm ci`: código 0, 314 pacotes, binário do Electron baixado pelo `postinstall`.
+- `npm test` (runtime, typecheck do processo principal e do renderer, compilação e `node --test`): código 0, **154/154**.
+- `npm run build` e `node e2e/journeys.mjs`: **9/9 jornadas**.
+- Mesmo E2E com `ATLAS_E2E_EXE` no executável empacotado: **9/9**.
+- Medições da D-027 em 3 execuções:
+  - indexação de 1.000 registros: 713–979 ms (meta ≤ 2 s);
+  - salvamento, mediana: 5,5–7,1 ms (meta ≤ 200 ms);
+  - RSS: 73–74 MiB.
+
+### 35.3 Pendente / limites
+
+- **Merge:** PRs #2 e #3 e esta branch dependem de merge pela proprietária. O job `app-tests` só roda no GitHub depois do push.
+- **Ações humanas:**
+  - abertura manual do AC-13 no Explorador;
+  - teste de usabilidade com a proprietária (Q-08);
+  - assinatura de código do instalador.
+- **Não executado:**
+  - E2E de diálogos nativos (escolher pasta, salvar ZIP, anexar). Esses fluxos são cobertos pelo serviço (`test/service.test.ts`) e pelo motor de backup; o E2E abre o vault por `--vault`;
+  - falta de espaço real, permissões NTFS negadas na interface e queda de energia;
+  - leitores de tela e auditoria de contraste de cada combinação da interface.
+- **Fora da V1:** busca global (V2), canvas (V3), grafo (V4), sync e Android (V5).
+- **Gate V0 e aceite da V1:** dependem do aceite humano da proprietária. Os testes acima são evidência e não substituem esse aceite (D-012).
