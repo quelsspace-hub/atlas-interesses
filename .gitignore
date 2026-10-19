@@ -12,3 +12,5 @@ target/
 dist/
 coverage/
 *.log
+dist-test/
+release/
