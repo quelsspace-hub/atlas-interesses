@@ -105,7 +105,11 @@ export function allRelations(index: VaultIndex, relations: readonly RelationKind
     if (want.has('group') && r.kind === 'item') {
       for (const g of itemGroups(index, r.metadata as never)) {
         if (!visible(g)) continue
-        const shared = (r.metadata as { tag_ids: string[] }).tag_ids.filter((t) => g.metadata.tag_ids.includes(t)).map((t) => title(index.byId.get(t)!)).join(', ')
+        // Tag referenciada pode não estar no índice (arquivo inválido ou apagado fora do app): cita o UUID.
+        const shared = (r.metadata as { tag_ids: string[] }).tag_ids.filter((t) => g.metadata.tag_ids.includes(t)).map((t) => {
+          const tag = index.byId.get(t)
+          return tag ? title(tag) : `tag ausente ${t.slice(0, 8)}`
+        }).join(', ')
         push({ from: r.id, to: g.id, kind: 'group', persisted: false, why: `Derivado: compartilha a(s) tag(s) ${shared} com o grupo “${g.metadata.title}” (D-004)` })
       }
     }

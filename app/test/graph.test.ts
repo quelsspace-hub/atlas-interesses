@@ -50,6 +50,15 @@ test('V4: relações derivadas de tag e grupo explicam a regra OR', () => {
   assert.match(group.why, /compartilha a\(s\) tag\(s\) UX com o grupo “Design”/)
   assert.ok(g.edges.filter((e) => e.kind === 'tag').length === 2, 'item e nota permanente marcados com UX')
   assert.ok(g.edges.every((e) => !e.persisted))
+
+  // Tag ausente do índice (inválida ou apagada fora do app) não quebra a explicação (revisão da PR #8).
+  const ghost = id(99)
+  const broken = buildIndex([
+    view('group', `groups/${id(30)}.md`, { ...base(30, 'Design'), tag_ids: [ghost], sort_order: 0 }),
+    view('item', `items/${id(1)}.md`, { ...base(1, 'Projeto'), type: 'project', tag_ids: [ghost], status: 'active', progress_mode: 'tasks', manual_progress: null })
+  ])
+  const ghostEdge = buildGraph(broken, { relations: ['group'] }).edges.find((e) => e.kind === 'group')!
+  assert.match(ghostEdge.why, /tag ausente 00000099/)
 })
 
 test('V4: navegação controlada por foco e profundidade; limite de nós com aviso', () => {
