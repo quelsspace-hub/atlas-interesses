@@ -110,6 +110,10 @@ Evidência e limites: [TEST_PLAN §17](../docs/TEST_PLAN.md) e [IMPLEMENTATION_S
 
 Exige saída inexistente. Resultado: 12/12 em [TEST_PLAN §21](../docs/TEST_PLAN.md). Abertura manual no Explorador continua pendente.
 
+## CI
+
+`.github/workflows/ci.yml` roda `npm ci` e `npm test` neste diretório num runner `windows-latest` do GitHub Actions, em toda PR, em push na `main` e sob demanda (aba Actions → CI → Run workflow). Casos pesados e executores de bench não entram. Registro em [IMPLEMENTATION_STATUS §34](../docs/IMPLEMENTATION_STATUS.md).
+
 ## Limites da escrita
 
 O adapter cria destinos com abertura exclusiva (`wx`), não com consulta prévia de existência. Para editar, calcula a revisão SHA-256 lida, grava e sincroniza um temporário ao lado do destino, relê o original imediatamente antes de `rename`, compara a revisão e confere o conteúdo persistido depois do rename. Conflitos preservam os bytes externos e carregam o rascunho local e hashes no diagnóstico. A limpeza só remove um temporário depois de a abertura exclusiva o criar; erro `EEXIST` não remove o arquivo alheio. Falha após possível substituição resulta em estado incerto; não há rollback automático.

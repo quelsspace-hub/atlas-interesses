@@ -555,3 +555,11 @@ A proposta separa requisitos DECIDIDOS/ESPECIFICADOS de recomendações técnica
 - **PENDENTE:** abertura manual no Explorador do Windows 11 (interação da proprietária). AC-13 completo, TC-13–TC-15 e gate V0 não aprovados. Esta evidência não dá motivo para reabrir DQ-07/Z-B.
 - **Correção de registro:** o cabeçalho e o §1 citavam 152/152; a contagem vigente é 172/172 (§32).
 - **Continua dependendo da proprietária:** valor numérico de S-1 (128:1 proposto, D-016); regras de nomes reservados e finais com espaço ou ponto; Q-01/Q-02/Q-04 para a Inbox; Q-07/Q-08 para a prova nativa.
+
+## 34. CI no GitHub Actions — 19/10/2026
+
+**Autorização:** pedido da proprietária para criar o arquivo de CI, registrar, abrir a PR e conferir o primeiro run. Ferramenta de verificação; não muda produto, stack ou contratos.
+
+- **Arquivo:** `.github/workflows/ci.yml`. Gatilhos: `pull_request`, `push` na `main` e `workflow_dispatch`. Permissão `contents: read`. Job único em `windows-latest` (plataforma prioritária, DQ-01), timeout de 20 min: `actions/checkout@v5`, `actions/setup-node@v5` (Node `24.22.0`, cache npm pelo `poc/package-lock.json`), `npm ci --no-audit --no-fund` e `npm test` em `poc/`. Os scripts usam o runtime pinado em `node-win-x64`.
+- **Fora do CI:** `ATLAS_AC13_HEAVY=1` e `bench/ac13-windows.js --heavy` (~9 GB e dezenas de minutos), executores de bench e a abertura manual no Explorador. O CI não substitui essas evidências nem aprova AC, TC ou gate.
+- **Resultado do primeiro run:** PENDENTE até a execução no GitHub.

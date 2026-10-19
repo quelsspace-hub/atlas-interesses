@@ -1,5 +1,10 @@
 # Histórico de mudanças
 
+## 2026-10-19 — CI no GitHub Actions
+
+- Novo `.github/workflows/ci.yml`: em PR, push na `main` e execução manual, roda `npm ci` e `npm test` em `poc/` num runner `windows-latest`. Casos pesados ficam fora. Sem mudança em código, contratos, manifestos ou lockfile.
+- Registro em IMPLEMENTATION_STATUS §34 e `poc/README.md`. Resultado do primeiro run em IMPLEMENTATION_STATUS §34.
+
 ## 2026-10-19 — AC-13: extração pelos componentes do Windows 11
 
 - Retomada após o trabalho do CodeRabbit (§29–§32): `npm test` no Windows 11 com runtime pinado, 172/172. Cabeçalho do status corrigido de 152 para 172.
