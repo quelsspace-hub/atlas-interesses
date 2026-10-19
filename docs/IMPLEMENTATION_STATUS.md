@@ -4,7 +4,7 @@
 
 ## 1. Situação
 
-**Estado atual (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
+**Estado atual (§36):** V2 (busca global e catálogo de fontes, D-028) implementada; testes 160/160 e E2E 10/10. **Antes (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
 
 O estado registrado na consolidação de 18/10/2026 é preservado como proveniência. PoCs delimitadas executadas nos ambientes de 17–18/10 cobrem persistência de um registro, regras D-003/D-004, renomeação de Tag, reconstrução de backlinks, regra pura D-001 e criação de nova permanente em fixture (seção 12). Os recortes não representam entidades completas ou schema V1. Isso não conclui V0, não implementa o aplicativo e não aprova a stack. Tauri 2 + React + TypeScript continua candidata.
 
@@ -625,3 +625,27 @@ Comandos executados em `app/`. Resultados detalhados em [TEST_PLAN §22](TEST_PL
   - leitores de tela e auditoria de contraste de cada combinação da interface.
 - **Fora da V1:** busca global (V2), canvas (V3), grafo (V4), sync e Android (V5).
 - **Gate V0 e aceite da V1:** dependem do aceite humano da proprietária. Os testes acima são evidência e não substituem esse aceite (D-012).
+
+## 36. V2 — busca global e catálogo de fontes — 19/10/2026
+
+**Autorização:** a proprietária pediu para retomar e seguir para o próximo passo, com decisões delegadas. Decisão D-028. Branch `feat/v2-search`, a partir da `main` em `3c0be80`, que já inclui as PRs #2, #4 e #5.
+
+- **Implementado:**
+  - `app/src/domain/search.ts`: índice puro e descartável, consulta com frase e exclusão, filtros combináveis, trechos e catálogo de fontes derivado;
+  - `app/src/renderer/screens/Search.tsx`: abas Busca global e Catálogo de fontes;
+  - entrada Busca na sidebar e atalhos Ctrl+K e Alt+7.
+- **Sem mudança:** schema, contratos de vault, dependências.
+- **VERIFICADO (Windows 11 Pro 26200):**
+  - `npm test`: **160/160**, sendo 6 novos em `search.test.ts`;
+  - `npm run build` e `node e2e/journeys.mjs`: **10/10 jornadas**. A nova jornada 8 cobre busca sem acento, frase exata no corpo, exclusão, filtro sem resultado e catálogo com a fonte gravada na nota;
+  - desempenho com 1.000 notas de cerca de 1 KB: construção do índice em 43 ms e consulta em 4,4 ms.
+- **Pendente:**
+  - validação de usabilidade com a proprietária;
+  - E2E no executável empacotado não repetido nesta etapa (o CI roda o E2E no build);
+  - busca fuzzy e entidade `Source`, adiadas pela D-028.
+- **Revisão do CodeRabbit na PR #6** (três comentários, todos procedentes e corrigidos):
+  - frase com aspa ainda aberta já é buscada como frase, enquanto a pessoa digita;
+  - Ctrl+K com a Busca aberta devolve o foco ao campo;
+  - o texto combinado para a exclusão é calculado uma vez por índice, e a varredura só roda quando há `-termo`.
+  O `build:test` agora limpa `dist-test/`: antes, testes compilados de outras branches podiam continuar sendo executados. `npm test`: 160/160; E2E 10/10, com a frase incompleta e o Ctrl+K.
+- **Próximo no roadmap:** V3, mapa visual sobre as entidades existentes, com zoom/pan, filtros, retorno ao contexto e alternativa em listas.

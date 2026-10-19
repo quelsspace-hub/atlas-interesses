@@ -3,7 +3,7 @@ import { buildIndex, type RecordView, type VaultIndex } from '../domain/derive.j
 import type { EntityKind } from '../domain/model.js'
 import type { ApiError, AppState, ConversionOutput, Result, VaultSnapshot } from '../shared/api.js'
 
-export type Screen = 'overview' | 'inbox' | 'atlas' | 'projects' | 'group' | 'item' | 'tasks' | 'notes' | 'note' | 'organization' | 'settings'
+export type Screen = 'overview' | 'inbox' | 'atlas' | 'projects' | 'group' | 'item' | 'tasks' | 'notes' | 'note' | 'organization' | 'search' | 'settings'
 export interface Route { screen: Screen; id?: string }
 
 interface Toast { id: number; kind: 'info' | 'error'; text: string }

@@ -1,4 +1,4 @@
-import { CheckSquare, FolderOpen, FolderPlus, Inbox as InboxIcon, LayoutGrid, Map as MapIcon, NotebookPen, Rocket, Settings as SettingsIcon, Tags } from 'lucide-react'
+import { CheckSquare, FolderOpen, FolderPlus, Inbox as InboxIcon, LayoutGrid, Map as MapIcon, NotebookPen, Rocket, Search as SearchIcon, Settings as SettingsIcon, Tags } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { isOpenTask } from '../domain/derive.js'
 import type { AppState } from '../shared/api.js'
@@ -8,6 +8,7 @@ import { ItemScreen } from './screens/Item.js'
 import { NoteScreen, NotesScreen } from './screens/Notes.js'
 import { OrganizationScreen } from './screens/Organization.js'
 import { OverviewScreen } from './screens/Overview.js'
+import { SearchScreen } from './screens/Search.js'
 import { SettingsScreen } from './screens/Settings.js'
 import { TasksScreen } from './screens/Tasks.js'
 import { AtlasProvider, errorText, useAtlas, type Screen } from './state.js'
@@ -55,10 +56,11 @@ function Shell({ onState }: { onState: (s: AppState) => void }) {
   const { app, setApp, index, route, navigate } = ctx
   useEffect(() => { onState(app) }, [app, onState])
 
-  // Atalhos Alt+1–Alt+6 (UX §5, D-025).
+  // Atalhos Alt+1–Alt+7 (UX §5, D-025) e Ctrl+K para a busca (D-028).
   useEffect(() => {
-    const order: Screen[] = ['overview', 'inbox', 'atlas', 'tasks', 'notes', 'organization']
+    const order: Screen[] = ['overview', 'inbox', 'atlas', 'tasks', 'notes', 'organization', 'search']
     const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'k') { e.preventDefault(); navigate({ screen: 'search' }); return }
       if (!e.altKey || e.ctrlKey || e.metaKey) return
       const n = Number(e.key)
       if (n >= 1 && n <= order.length) { e.preventDefault(); navigate({ screen: order[n - 1]! }) }
@@ -78,7 +80,8 @@ function Shell({ onState }: { onState: (s: AppState) => void }) {
     { screen: 'projects', label: 'Projetos', icon: <Rocket size={18} /> },
     { screen: 'tasks', label: 'Tarefas', icon: <CheckSquare size={18} />, count: open, key: 'Alt+4' },
     { screen: 'notes', label: 'Notas', icon: <NotebookPen size={18} />, key: 'Alt+5' },
-    { screen: 'organization', label: 'Organização', icon: <Tags size={18} />, key: 'Alt+6' }
+    { screen: 'organization', label: 'Organização', icon: <Tags size={18} />, key: 'Alt+6' },
+    { screen: 'search', label: 'Busca', icon: <SearchIcon size={18} />, key: 'Ctrl+K' }
   ]
   const current: Screen = route.screen === 'group' ? 'atlas' : route.screen === 'item' ? 'atlas' : route.screen === 'note' ? 'notes' : route.screen
   const vaultName = app.vaultPath.split(/[\\/]/).filter(Boolean).pop()
@@ -119,6 +122,7 @@ function Routes() {
     case 'notes': return <NotesScreen />
     case 'note': return <NoteScreen key={route.id} id={route.id!} />
     case 'organization': return <OrganizationScreen />
+    case 'search': return <SearchScreen />
     case 'settings': return <SettingsScreen />
   }
 }

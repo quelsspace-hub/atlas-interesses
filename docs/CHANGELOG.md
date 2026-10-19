@@ -1,5 +1,16 @@
 # Histórico de mudanças
 
+## 2026-10-19 — V2: busca global e catálogo de fontes
+
+- D-028:
+  - busca no corpo e nos metadados, sem acento e sem caixa, com frase exata e exclusão;
+  - filtros combináveis (tipo, status, tipo de nota, tags com OR, arquivados);
+  - catálogo de fontes derivado das notas;
+  - índice só em memória;
+  - sem mudança de schema.
+- Tela Busca e atalho Ctrl+K. Testes 160/160; E2E 10/10.
+- Revisão do CodeRabbit: frase com aspa aberta, foco no Ctrl+K e exclusão pré-calculada; `dist-test/` limpo a cada build de testes. Detalhes em IMPLEMENTATION_STATUS §36 e TEST_PLAN §23.
+
 ## 2026-10-19 — Aplicativo V1 (Electron) e decisões delegadas
 
 - Decisões D-017 a D-027 tomadas por delegação da proprietária: stack Electron + React + TS; S-1 128:1; nomes reservados; Q-01 a Q-10. ADR-008 decidida.
