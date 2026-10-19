@@ -754,3 +754,39 @@ Ambiente idêntico ao §22. Comandos em `app/`: `npm test` e `npm run e2e`.
 - leitor de tela;
 - vault real com milhares de links;
 - gestos de toque.
+
+## 26. V5 — sync por pasta, conflitos, backup automático e segurança (19/10/2026)
+
+**Ambiente:** idêntico ao §22.
+
+**Comandos** em `app/`:
+
+```powershell
+npm test
+npm run e2e
+electron-builder --win --x64 '--config.directories.output=release/v5'
+$env:ATLAS_E2E_EXE = "$PWD\release\v5\win-unpacked\Atlas de Interesses.exe"; node e2e/journeys.mjs
+```
+
+O `electron-builder` foi executado com `CSC_IDENTITY_AUTO_DISCOVERY=false`.
+
+**`sync.test.ts`, 5/5:**
+
+| Caso | O que verifica |
+| --- | --- |
+| Detecção | Cópias no padrão do Dropbox, do Syncthing, do Google Drive e do OneDrive são reconhecidas; `LEIA-ME.md` não; um só registro |
+| Manter ou usar | “Manter atual” manda a cópia para a Lixeira; “usar cópia” promove a cópia e manda a anterior para a Lixeira; as duas versões são recuperáveis |
+| Recusas | A versão atual mudou depois da comparação; a cópia tem frontmatter inválido. Nada é trocado e nada vai para a Lixeira |
+| Backup automático | Recusa pasta dentro do vault; 4 execuções a cada 24 h com `keep: 2`; só os automáticos vão para a Lixeira; `meu-arquivo.zip` intocado; transação pendente gera falha registrada, sem ZIP novo, e o backup continua devido |
+| Provedor | Indicação pelo caminho e pela variável `OneDrive` |
+
+**Suíte completa:** 171/171.
+
+**E2E:** 13/13, no build e no executável empacotado. A jornada 11 cobre segurança do renderer, mudança externa relida e conflito resolvido com “Usar a cópia”, com a versão anterior byte a byte na Lixeira de teste.
+
+**Não coberto:**
+
+- provedores reais em dois aparelhos;
+- Android;
+- diálogo nativo da pasta do backup automático;
+- queda de energia durante a troca de conflito, cujo pior caso é a versão anterior na Lixeira e a cópia preservada.

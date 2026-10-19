@@ -10,17 +10,23 @@ import { restoreBackup } from '../vault/backup/restore.js'
 import { verifyBackupArchive } from '../vault/backup/verify-archive.js'
 import { sha256 } from '../vault/core/record.js'
 import { InboxTransactions } from '../vault/inbox.js'
-import { VaultError, VaultRepository, translate } from '../vault/repository.js'
+import { VaultError, VaultRepository, translate, type LoadReport } from '../vault/repository.js'
+import { autoBackupName, describeConflict, keepCurrent, rotateAutoBackups, syncProvider, useCopy, type ConflictView, type Trash } from '../vault/sync.js'
 import { markdownLink } from '../domain/links.js'
 import type { EntityKind } from '../domain/model.js'
-import type { ApiError, AppState, ConversionOutput, ExportOutcome, ExportPreview, Result, RestoreOutcome, RestorePreview, ThemePreference, VaultSnapshot } from '../shared/api.js'
+import type { ApiError, AppState, AutoBackupSettings, ConversionOutput, ExportOutcome, ExportPreview, Result, RestoreOutcome, RestorePreview, ThemePreference, VaultSnapshot } from '../shared/api.js'
 
 // Preferências do dispositivo (D-014, D-027): fora do vault, na pasta de dados do aplicativo.
 interface DeviceSettings {
   vaultPath: string | null
   recentVaults: string[]
   theme: ThemePreference
+  // Backup automático (D-031 §5): decisão permanente da pessoa, por dispositivo.
+  autoBackup: AutoBackupSettings
 }
+
+const DEFAULT_AUTO_BACKUP: AutoBackupSettings = { enabled: false, folder: null, keep: 10, last: null, lastSuccessAt: null }
+const DAY_MS = 24 * 60 * 60 * 1000
 
 export function ok<T>(value: T): Result<T> {
   return { ok: true, value }
@@ -39,7 +45,9 @@ export function fail(error: unknown): Result<never> {
       return { ok: false, error: { code, message: describeBackupError(e), details: diagnostics ? { diagnostics } : {} } }
     }
   }
-  return { ok: false, error: translate(error) as unknown as ApiError }
+  const t = translate(error)
+  // Objeto simples: instâncias de Error perdem campos na serialização do IPC.
+  return { ok: false, error: { code: t.code, message: t.message, details: t.details } }
 }
 
 function describeBackupError(e: Error): string {
@@ -53,12 +61,32 @@ function describeBackupError(e: Error): string {
   return e.message
 }
 
+function signatureOf(repo: VaultRepository, report: LoadReport): string {
+  return [
+    ...repo.views().map((v) => `${v.id}:${v.revision}`).sort(),
+    ...report.invalid.map((i) => `invalid:${i.path}`).sort(),
+    ...report.conflicts.map((c) => `conflict:${c.path}`).sort(),
+    ...report.transactions.map((t) => `txn:${t}`).sort()
+  ].join('\n')
+}
+
 export class AtlasService {
-  private settings: DeviceSettings = { vaultPath: null, recentVaults: [], theme: 'system' }
+  private settings: DeviceSettings = { vaultPath: null, recentVaults: [], theme: 'system', autoBackup: { ...DEFAULT_AUTO_BACKUP } }
   private repo: VaultRepository | null = null
   private inbox: InboxTransactions | null = null
+  // Operações que leem ou gravam o repositório correm em série, para que uma releitura disparada
+  // pela sincronização não intercale com uma gravação (D-031).
+  private queue: Promise<unknown> = Promise.resolve()
+  private converting = new Set<string>()
+  private autoBackupRunning = false
 
-  constructor(private readonly appDataDirectory: string, private readonly appVersion: string) {}
+  constructor(private readonly appDataDirectory: string, private readonly appVersion: string, private readonly trash: Trash = async () => { throw new Error('Lixeira indisponível') }, private readonly clock: () => Date = () => new Date()) {}
+
+  private serial<T>(fn: () => Promise<T>): Promise<T> {
+    const run = this.queue.then(fn, fn)
+    this.queue = run.catch(() => undefined)
+    return run
+  }
 
   private get settingsPath(): string {
     return join(this.appDataDirectory, 'device-settings.json')
@@ -70,7 +98,8 @@ export class AtlasService {
       this.settings = {
         vaultPath: typeof raw.vaultPath === 'string' ? raw.vaultPath : null,
         recentVaults: Array.isArray(raw.recentVaults) ? raw.recentVaults.filter((p): p is string => typeof p === 'string').slice(0, 8) : [],
-        theme: raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'system'
+        theme: raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'system',
+        autoBackup: { ...DEFAULT_AUTO_BACKUP, ...(raw.autoBackup ?? {}) }
       }
     } catch {
       // Primeira execução ou arquivo ilegível: preferências padrão; o vault em si não é afetado.
@@ -92,7 +121,14 @@ export class AtlasService {
   }
 
   state(): AppState {
-    return { vaultPath: this.settings.vaultPath, recentVaults: this.settings.recentVaults, theme: this.settings.theme, version: this.appVersion }
+    return {
+      vaultPath: this.settings.vaultPath,
+      recentVaults: this.settings.recentVaults,
+      theme: this.settings.theme,
+      version: this.appVersion,
+      autoBackup: this.settings.autoBackup,
+      syncProvider: this.repo ? syncProvider(this.repo.root) : null
+    }
   }
 
   get vaultRoot(): string | null {
@@ -137,30 +173,121 @@ export class AtlasService {
     return { repo: this.repo, inbox: this.inbox }
   }
 
-  async load(): Promise<VaultSnapshot> {
-    const { repo, inbox } = this.require()
-    let report = await repo.load()
-    const recovery = report.transactions.length > 0 ? await inbox.recoverAll(report.transactions) : []
-    if (recovery.length > 0) report = await repo.load()
-    const records = repo.views()
-    const schemaVersions = [...new Set(records.map((r) => r.metadata.schema_version as number))].sort()
-    return { path: repo.root, records, invalid: report.invalid, temporaries: report.temporaries, transactions: report.transactions, recovery, schemaVersions }
+  load(): Promise<VaultSnapshot> {
+    return this.serial(async () => {
+      const { repo, inbox } = this.require()
+      let report = await repo.load()
+      // Nunca "recupera" uma conversão que este processo está executando agora.
+      const pending = report.transactions.filter((t) => ![...this.converting].some((id) => t.endsWith(`.txn_${id}.json`)))
+      const recovery = pending.length > 0 ? await inbox.recoverAll(pending) : []
+      if (recovery.length > 0) report = await repo.load()
+      const records = repo.views()
+      const schemaVersions = [...new Set(records.map((r) => r.metadata.schema_version as number))].sort()
+      return { path: repo.root, records, invalid: report.invalid, temporaries: report.temporaries, transactions: report.transactions, recovery, schemaVersions, conflicts: report.conflicts }
+    })
+  }
+
+  // Assinatura do estado do disco, calculada numa leitura separada (não altera o repositório ativo).
+  async diskSignature(): Promise<string | null> {
+    if (!this.repo) return null
+    const probe = new VaultRepository(this.repo.root)
+    return signatureOf(probe, await probe.load())
+  }
+
+  // Mesma assinatura a partir do repositório em memória: logo depois de uma operação do próprio app,
+  // ela coincide com o disco, e o observador não trata a gravação como mudança externa.
+  memorySignature(): string | null {
+    return this.repo ? signatureOf(this.repo, this.repo.report()) : null
   }
 
   create(kind: EntityKind, metadata: Record<string, unknown>, body: string) {
-    return this.require().repo.create(kind, metadata, body)
+    return this.serial(() => this.require().repo.create(kind, metadata, body))
   }
 
   update(id: string, revision: string, metadata: Record<string, unknown>, body?: string) {
-    return this.require().repo.update(id, revision, metadata, body)
+    return this.serial(() => this.require().repo.update(id, revision, metadata, body))
   }
 
   refresh(id: string) {
-    return this.require().repo.refresh(id)
+    return this.serial(() => this.require().repo.refresh(id))
   }
 
   convert(captureId: string, revision: string, outputs: ConversionOutput[]) {
-    return this.require().inbox.convert(captureId, revision, outputs)
+    return this.serial(async () => {
+      this.converting.add(captureId)
+      try {
+        return await this.require().inbox.convert(captureId, revision, outputs)
+      } finally {
+        this.converting.delete(captureId)
+      }
+    })
+  }
+
+  // Conflitos de sincronização (D-031 §4).
+  conflict(path: string): Promise<ConflictView> {
+    return this.serial(async () => {
+      const { repo } = this.require()
+      await repo.load()
+      const found = repo.report().conflicts.find((c) => c.path === path)
+      if (!found) throw new VaultError('not-found', 'Cópia de conflito não encontrada; releia o vault.')
+      return describeConflict(repo, found)
+    })
+  }
+
+  resolveConflict(path: string, choice: 'keep-current' | 'use-copy', expectedCurrentRevision: string | null): Promise<null> {
+    return this.serial(async () => {
+      const { repo } = this.require()
+      await repo.load()
+      if (choice === 'keep-current') await keepCurrent(repo, path, this.trash)
+      else await useCopy(repo, path, expectedCurrentRevision, this.trash)
+      return null
+    })
+  }
+
+  // Backup automático (D-031 §5).
+  async setAutoBackup(patch: Partial<Pick<AutoBackupSettings, 'enabled' | 'folder' | 'keep'>>): Promise<AppState> {
+    const next = { ...this.settings.autoBackup, ...patch }
+    if (next.folder && this.isInsideVault(await realpath(next.folder).catch(() => next.folder!))) throw new VaultError('invalid', 'A pasta do backup automático precisa ficar fora do vault.')
+    if (!Number.isInteger(next.keep) || next.keep < 1 || next.keep > 100) throw new VaultError('invalid', 'Mantenha entre 1 e 100 backups.')
+    this.settings.autoBackup = next
+    await this.persistSettings()
+    return this.state()
+  }
+
+  autoBackupDue(): boolean {
+    const a = this.settings.autoBackup
+    if (!a.enabled || !a.folder || !this.repo || this.autoBackupRunning) return false
+    return !a.lastSuccessAt || this.clock().getTime() - Date.parse(a.lastSuccessAt) >= DAY_MS
+  }
+
+  async runAutoBackup(force = false): Promise<AppState> {
+    const a = this.settings.autoBackup
+    if (!this.repo) throw new VaultError('not-found', 'Nenhum vault aberto.')
+    if (!a.folder) throw new VaultError('invalid', 'Escolha a pasta do backup automático.')
+    if (!force && !this.autoBackupDue()) return this.state()
+    if (this.autoBackupRunning) return this.state()
+    this.autoBackupRunning = true
+    const at = this.clock()
+    try {
+      const target = join(a.folder, autoBackupName(at))
+      // Decisão permanente registrada na configuração: incluir conteúdo não canônico (nada omitido)
+      // e excluir só os arquivos de sistema da lista fechada (Thumbs.db, desktop.ini, .DS_Store).
+      const result = await exportBackup(this.repo.root, target, {
+        decide: (inventory) => ({ nonCanonical: Object.fromEntries(inventory.nonCanonical.map((f) => [f.path, 'include' as const])), systemFiles: 'exclude' }),
+        maxCompressionRatio: DEFAULT_MAX_COMPRESSION_RATIO,
+        now: () => at
+      })
+      const removed = await rotateAutoBackups(a.folder, a.keep, this.trash)
+      this.settings.autoBackup = { ...this.settings.autoBackup, lastSuccessAt: at.toISOString(), last: { at: at.toISOString(), ok: true, message: `${result.manifest.file_count} arquivo(s) verificados${removed.length ? `; ${removed.length} backup(s) antigo(s) enviados para a Lixeira` : ''}.`, file: result.archivePath } }
+    } catch (error) {
+      const failed = fail(error)
+      const message = failed.ok ? 'Falha desconhecida.' : failed.error.message + (Array.isArray(failed.error.details?.diagnostics) ? ` ${(failed.error.details!.diagnostics as Array<{ path: string; message: string }>).slice(0, 3).map((d) => `${d.path}: ${d.message}`).join(' · ')}` : '')
+      this.settings.autoBackup = { ...this.settings.autoBackup, last: { at: at.toISOString(), ok: false, message, file: null } }
+    } finally {
+      this.autoBackupRunning = false
+    }
+    await this.persistSettings()
+    return this.state()
   }
 
   // Anexo (D-027): cópia exclusiva para assets/{UUID}-{nome saneado}; devolve o link relativo.

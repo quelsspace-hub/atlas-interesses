@@ -40,3 +40,8 @@
 ## Interpretação dos estados
 
 DECIDIDO significa regra aprovada; PROPOSTO significa solução em avaliação; PENDENTE exige decisão/prova; RELATADO vem de fonte anterior; VERIFICADO exige evidência delimitada. Exemplo legível ou documento validado não comprova software funcionando.
+
+## Atualização — 19/10/2026
+
+- [PROPOSTA_V5_ARQUITETURA](PROPOSTA_V5_ARQUITETURA.md): arquitetura da V5 (D-031): sync por pasta, conflitos, backup automático, segurança e plano do Android.
+- O aplicativo está em [app/README](../app/README.md). O estado de V1 a V5 está em [IMPLEMENTATION_STATUS](IMPLEMENTATION_STATUS.md), §35 a §39.

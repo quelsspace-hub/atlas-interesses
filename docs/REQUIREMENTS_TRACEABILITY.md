@@ -156,3 +156,14 @@ REQ-008 → D-015 / VAULT_CONTRACT §7.5 → S-1 / AC-07 → [TEST_PLAN §19](TE
 | Roadmap V4: grafo de links e relações derivadas distinguidos (D-009, D-030) | `src/domain/graph.ts`, `screens/Graph.tsx` | `graph.test.ts`; E2E jornada 10 | VERIFICADO; usabilidade pendente |
 | Gate V4: relações explicáveis | `GraphEdge.why` no painel, na dica e na lista | Testes 1 e 2; E2E (explicação visível) | VERIFICADO |
 | Gate V4: navegação controlada e limites | Foco, profundidade, `maxNodes` 150 e aviso | Teste 3; E2E | VERIFICADO |
+
+## V5 — 19/10/2026
+
+| Requisito / decisão | Implementação | Evidência | Estado |
+| --- | --- | --- | --- |
+| Gate V5: conflitos recuperáveis (D-031) | `repository.ts` (detecção), `sync.ts` (resolução pela Lixeira), Diagnóstico | `sync.test.ts` 1–3; E2E jornada 11 | VERIFICADO com cópias simuladas; provedores reais pendentes |
+| Gate V5: offline definido | Sync por pasta; nenhum acesso de rede no app | PROPOSTA_V5 §3; E2E (`fetch` recusado) | VERIFICADO |
+| Gate V5: segurança validada | `contextIsolation`, `sandbox`, CSP, IPC com remetente | E2E jornada 11 (sem Node, sem rede) | VERIFICADO no Windows |
+| Backup automático (D-031 §5) | `service.runAutoBackup`, `rotateAutoBackups`, Configurações | `sync.test.ts` 4 | VERIFICADO; diálogo nativo sem E2E |
+| Sincronização ao vivo (D-031 §3) | `fs.watch` em `main.ts`; aviso e releitura na interface | E2E jornada 11 | VERIFICADO |
+| Android (D-031 §8) | — | — | PENDENTE |

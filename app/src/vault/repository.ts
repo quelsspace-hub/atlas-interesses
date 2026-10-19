@@ -14,6 +14,9 @@ import type { RecordView } from '../domain/derive.js'
 const recordName = /^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.md$/
 const temporaryName = /^\.tmp-[0-9a-f-]{36}\.md$/
 const transactionName = /^\.txn_[0-9a-f-]{36}\.json$/
+// Cópia de conflito de sincronização (D-031): começa com o UUID do registro mas não é exatamente {uuid}.md
+// (Dropbox "(… conflito …)", Syncthing ".sync-conflict-…", Google Drive " (1)", OneDrive "-NOMEDOPC").
+const conflictName = /^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}).+\.md$/i
 const utf8 = new TextDecoder('utf-8', { fatal: false })
 
 export class VaultError extends Error {
@@ -30,10 +33,18 @@ interface Entry {
   problems: Problem[]
 }
 
+export interface ConflictCopy {
+  path: string
+  recordId: string
+  recordPath: string
+  kind: EntityKind
+}
+
 export interface LoadReport {
   invalid: Array<{ path: string; problems: Problem[] }>
   temporaries: string[]
   transactions: string[]
+  conflicts: ConflictCopy[]
 }
 
 export class VaultRepository {
@@ -41,6 +52,7 @@ export class VaultRepository {
   private invalidFiles: Array<{ path: string; problems: Problem[] }> = []
   private temporaries: string[] = []
   private transactions: string[] = []
+  private conflicts: ConflictCopy[] = []
 
   constructor(readonly root: string, readonly storage: StoragePort = new NodeFileStorage(), private readonly clock: () => Date = () => new Date()) {}
 
@@ -58,6 +70,7 @@ export class VaultRepository {
     this.invalidFiles = []
     this.temporaries = []
     this.transactions = []
+    this.conflicts = []
     for (const { folder, kind, noteType } of RECORD_FOLDERS) {
       let names: string[]
       try {
@@ -71,7 +84,11 @@ export class VaultRepository {
         if (temporaryName.test(name)) { this.temporaries.push(relPath); continue }
         if (kind === 'capture' && transactionName.test(name)) { this.transactions.push(relPath); continue }
         const match = recordName.exec(name)
-        if (!match) continue // conteúdo não canônico (E-C); não é validado como registro
+        if (!match) {
+          const conflict = conflictName.exec(name)
+          if (conflict) this.conflicts.push({ path: relPath, recordId: conflict[1]!.toLowerCase(), recordPath: `${folder}/${conflict[1]!.toLowerCase()}.md`, kind })
+          continue // conteúdo não canônico (E-C); não é validado como registro
+        }
         await this.loadOne(kind, relPath, match[1]!, noteType)
       }
     }
@@ -80,7 +97,7 @@ export class VaultRepository {
   }
 
   report(): LoadReport {
-    return { invalid: [...this.invalidFiles], temporaries: [...this.temporaries], transactions: [...this.transactions] }
+    return { invalid: [...this.invalidFiles], temporaries: [...this.temporaries], transactions: [...this.transactions], conflicts: [...this.conflicts] }
   }
 
   private async loadOne(kind: EntityKind, relPath: string, fileId: string, noteType?: NoteType): Promise<void> {

@@ -155,6 +155,13 @@ export function AtlasProvider({ initial, children, renderPending }: { initial: A
   const goBack = useCallback((fallback: Route) => confirmDiscard(() => dispatch({ type: 'back', fallback })), [confirmDiscard])
   const previous = history[history.length - 1] ?? null
 
+  // D-031: mudanças externas (sincronização, outro editor) reindexam a interface. Edições em andamento
+  // ficam no editor; o protocolo de revisão impede sobrescrever a versão nova.
+  useEffect(() => window.atlas.onVaultChanged(() => {
+    void reload().then(() => toast('O vault mudou fora do aplicativo; os dados foram relidos do disco.'))
+  }), [reload, toast])
+  useEffect(() => window.atlas.onStateChanged((s) => setApp(s)), [])
+
   // D-025: fechar a janela com alterações pendentes pergunta Salvar / Descartar / Cancelar.
   useEffect(() => window.atlas.onCloseRequested(() => confirmDiscard(() => void window.atlas.confirmClose())), [confirmDiscard])
 
