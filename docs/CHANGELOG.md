@@ -4,6 +4,7 @@
 
 - Novo `.github/workflows/ci.yml`: em PR, push na `main` e execução manual, roda `npm ci` e `npm test` em `poc/` num runner `windows-latest`. Casos pesados ficam fora. Sem mudança em código, contratos, manifestos ou lockfile.
 - Registro em IMPLEMENTATION_STATUS §34 e `poc/README.md`. Resultado do primeiro run em IMPLEMENTATION_STATUS §34.
+- O primeiro run revelou 11 testes sensíveis a `TEMP` com nome curto 8.3; os helpers de teste de exportação/restauração passaram a usar o caminho real. Sem mudança em `src/`.
 
 ## 2026-10-19 — AC-13: extração pelos componentes do Windows 11
 
