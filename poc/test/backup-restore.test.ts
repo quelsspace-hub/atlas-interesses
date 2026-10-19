@@ -375,7 +375,7 @@ test('AC-08: destinos inválidos e cancelamento são recusados sem escrita; past
       await symlink(space.vault, join(space.root, 'vault-por-juncao'), 'junction')
       return { activeVaultRoot: join(space.root, 'vault-por-juncao'), parentDirectory: join(space.vault, 'notes') }
     }, 'overlaps-active-vault'],
-    ['vault ativo com outra grafia de maiúsculas', async (space) => ({ activeVaultRoot: space.vault.toUpperCase(), parentDirectory: join(space.vault, 'notes') }), 'overlaps-active-vault'],
+    ['vault ativo com outra grafia de maiúsculas', async (space) => ({ activeVaultRoot: space.vault.toUpperCase(), parentDirectory: join(space.vault, 'notes') }), process.platform === 'win32' ? 'overlaps-active-vault' : 'active-vault-unavailable'],
     ['espaço livre insuficiente', async () => ({ fs: new NoSpaceFileSystem() }), 'insufficient-space'],
     ['nome de pasta com separador', async () => ({ folderName: 'a/b' }), 'invalid-folder-name']
   ]

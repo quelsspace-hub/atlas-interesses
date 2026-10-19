@@ -1,5 +1,27 @@
 # Histórico de mudanças
 
+## 2026-10-19 — S-1 explícito
+
+- Política A aprovada (D-016); mecanismo opcional implementado sem instalar padrão numérico.
+- 172/172 testes e 11/11 casos do candidato 128:1; recusas legítimas documentadas. AC-07 segue parcial.
+
+## 2026-10-19 — F-2.v1 aprovado e experimento executado
+
+- Gerador determinístico e executor F-2/F-3 com store/deflate 1/6/9, processos isolados e registros de memória/tempo/disco por fase. PNG/PDF reais e inventário com hashes de arquivos/corpos.
+- Suíte ampliada: 164/164, código 0; 75/75 operações medidas, incluindo 15 recusas de corrupção antes da confirmação/destino. Dados e resumo em poc/bench/results; TEST_PLAN §19.
+- Sobreposição de razões legítimas e de expansão comprovada; alternativas para S-1 submetidas em PROPOSTA_AC07_LIMITES §6. Contrato, exportador e dependências preservados. AC-07 completo e Windows continuam pendentes.
+
+## 2026-10-19 — Proposta F-2.v1 para revisão
+
+- Composição, reprodutibilidade, protocolo de medição e casos F-3 em PROPOSTA_F2_V1; classificação PROPOSTO, aguardando aprovação antes da geração.
+- Risco de sobreposição entre razões legítimas e de expansão explicitado; nenhum S-1 decidido. Índice e controles atualizados; sem código, amostras ou novas medições.
+
+## 2026-10-19 — AC-13 automático na PoC; compatibilidade Windows pendente
+
+- Revisadas as opções ZIP64 já existentes; padrão Z-B preservado. Testes leves reforçam estruturas, bytes e recusa de corrupção; novos casos pesados provam promoção por contagem/tamanho, em execução explícita.
+- Suíte principal: runtime 24.22.0, typecheck/build e 152/152 testes aprovados no Linux. EACCES/EPERM sintéticos e EACCES POSIX real exercitados. Ajustada a expectativa de caminho Windows na regressão Linux.
+- Evidências e limitações em TEST_PLAN §17 e IMPLEMENTATION_STATUS §29; estados atualizados em VAULT_CONTRACT, OPEN_QUESTIONS e rastreabilidade; comandos em poc/README. Manifests/lockfiles e contratos de produto preservados. Extração Windows pendente; nenhum TC completo ou gate V0 aprovado.
+
 ## 2026-10-18 — Incremento 4 da PoC: limites da D-015 e AC-07
 
 - **Código:** `poc/src/backup/manifest.ts`, `verify-archive.ts`, `inventory.ts`, `export.ts` e `restore.ts`: teto do manifesto, caracteres de controle, comprimento, segmento e profundidade de caminho, espaço livre na exportação e caminho absoluto no destino. A razão de compressão não foi implementada.

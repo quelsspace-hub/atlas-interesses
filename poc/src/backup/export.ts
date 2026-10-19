@@ -1,3 +1,4 @@
+import { validateCompressionLimit, type CompressionPolicy } from './compression.js'
 import { createHash, randomUUID } from 'node:crypto'
 import type { FileHandle } from 'node:fs/promises'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
@@ -32,7 +33,7 @@ export interface ExportHooks {
 
 export type ExportPhase = 'inventory' | 'hash' | 'zip' | 'rescan' | 'rehash' | 'verify' | 'publish' | 'done'
 
-export interface ExportOptions {
+export interface ExportOptions extends CompressionPolicy {
   decide: (inventory: VaultInventory) => ExportDecisions | 'cancel' | Promise<ExportDecisions | 'cancel'>
   fs?: BackupFileSystem
   now?: () => Date
@@ -100,7 +101,7 @@ async function writeArchive(
   zip.outputStream.pipe(output)
 
   for (const file of manifest.files) {
-    // Sem compressão: nenhuma entrada pode exceder um limite de razão ainda não definido (A-01).
+    // Store mantém razão <= 1 para qualquer conteúdo; satisfaz todo limite S-1 válido (A-01).
     zip.addReadStreamLazy(file.path, { compress: false, size: file.size, mtime, mode: 0o100644, forceZip64Format: forceZip64 }, (callback) => {
       const hash = createHash('sha256')
       const tap = new Transform({
@@ -194,6 +195,7 @@ export function exportSpaceRequirement(files: readonly { size: number }[]): numb
 
 // Exportação da PoC: inventário, validação simétrica, M-B, C-A e publicação sem sobrescrita (VAULT_CONTRACT §7).
 export async function exportBackup(vaultRoot: string, archivePath: string, options: ExportOptions): Promise<ExportResult> {
+  const policy = { maxCompressionRatio: validateCompressionLimit(options.maxCompressionRatio) }
   const fs = options.fs ?? new BackupFileSystem()
   const now = options.now ?? (() => new Date())
   const generateId = options.generateId ?? randomUUID
@@ -281,7 +283,7 @@ export async function exportBackup(vaultRoot: string, archivePath: string, optio
     if (changes.length > 0) throw new BackupConcurrentChangeError(changes, false)
 
     phase('verify')
-    const verified = await verifyBackupArchive(temporaryPath)
+    const verified = await verifyBackupArchive(temporaryPath, policy)
     if (JSON.stringify(verified) !== JSON.stringify(manifest)) {
       throw new BackupVerificationError([{ category: 'integrity', path: MANIFEST_PATH, code: 'manifest-mismatch', message: 'archive manifest differs from the export manifest' }])
     }

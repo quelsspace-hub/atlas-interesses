@@ -1,8 +1,10 @@
 # Status real do Atlas
 
-**Atualização registrada:** 18/10/2026 · **Execução mais recente:** 18/10/2026 no ambiente · **Etapa:** PoC local parcial de persistência, domínio, Tag, backlinks, contexto D-001 e nova permanente D-008.
+**Atualização registrada:** 19/10/2026 · **Execução mais recente:** 19/10/2026 no sandbox Linux · **Etapa:** PoC local parcial, incluindo backup/restauração, limites D-015 e validação automática de ZIP64 (AC-13; §29).
 
 ## 1. Situação
+
+**Estado atual:** suíte principal com 152/152 testes aprovados; evidências do AC-13 e limites de plataforma no §29. O aceite completo do AC-13 depende da extração no Windows 11.
 
 O estado registrado na consolidação de 18/10/2026 é preservado como proveniência. PoCs delimitadas executadas nos ambientes de 17–18/10 cobrem persistência de um registro, regras D-003/D-004, renomeação de Tag, reconstrução de backlinks, regra pura D-001 e criação de nova permanente em fixture (seção 12). Os recortes não representam entidades completas ou schema V1. Isso não conclui V0, não implementa o aplicativo e não aprova a stack. Tauri 2 + React + TypeScript continua candidata.
 
@@ -39,6 +41,8 @@ Registros antigos de PoC “13/13 PASS”, “11 aprovados + 2 parciais” e V0 
 As seis regras auditadas estão confirmadas e não são pendências: Item.status com seis estados; Item.priority e Task.priority opcionais com low/medium/high; Group.sort_order e Task.sort_order inteiros obrigatórios; InboxCapture.capture_kind obrigatório com os sete valores originais. Permanecem apenas as demais propostas de Q-01–Q-10, incluindo defaults não decididos, conteúdo/destinos da Inbox, tarefas arquivadas, falhas, backup, plataforma e UX. Nenhuma delas foi resolvida nesta correção.
 
 ## 5. Próximo passo
+
+**Atualização de 19/10/2026:** concluir a comprovação de compatibilidade ZIP64 no Windows 11 (§29). Em seguida, propor a composição F-2.v1 para aprovação, medir amostras legítimas comprimíveis e F-3 maliciosas, e submeter o valor S-1 antes de implementar a razão de compressão do AC-07. Inbox depende de Q-01/Q-02/Q-04; nenhuma mudança estrutural dessa etapa foi iniciada. Os parágrafos abaixo preservam a sequência histórica.
 
 Aguardar a revisão da proprietária desta etapa delimitada. Nenhuma etapa adicional, integração nativa ou implementação do aplicativo está autorizada por esta entrega.
 
@@ -500,3 +504,44 @@ A proposta separa requisitos DECIDIDOS/ESPECIFICADOS de recomendações técnica
   - a falta de espaço real não foi testada.
 - **Não implementado:** razão de compressão (S-1), AC-13, nomes reservados de dispositivo e nomes terminados em espaço ou ponto, integração nativa. TC-14 não foi aprovado.
 - **Não alterados:** dependências, lockfiles, `poc/package.json` e contratos. As linhas de estado do VAULT_CONTRACT §7.5 e da D-015 foram atualizadas com o fato da implementação, com o estado anterior preservado.
+
+## 29. AC-13: conclusão automática da PoC; aceite Windows pendente
+
+**Data:** 19/10/2026 · **Escopo autorizado:** revisar e concluir os testes ZIP64 iniciados, executar a suíte completa e os casos reais de F-3, registrar evidências e planejar a próxima etapa. Base Git `0fa1eaf7df348358fc85372dfec89c95a269cfe6`, alterações locais na branch `coderabbit/complete-zip64-backup-validation/9a96eb20`.
+
+- **Revisão de `poc/src/backup/export.ts`:** a opção experimental `forceZip64` já estava implementada e versionada na base recebida; força as entradas e o EOCD para a fixture. Sem a opção, `yazl` decide pela necessidade (Z-B). Não foi necessário alterar esse arquivo.
+- **Implementação/testes:**
+  - `poc/test/backup-zip64.test.ts`: reforçadas as verificações de sentinelas ZIP64, bytes restaurados e recusas de conteúdo/localizador/registro final adulterados antes de qualquer confirmação ou escrita; EACCES/EPERM injetados em exportação/restauração; cleanup associado ao contexto dono da fixture;
+  - `poc/test/zip-structure.ts`: leitura completa dos trechos, rodapé com comentário coerente, limites de arquivo/entradas/extras e conferência da contagem central;
+  - `poc/test/heavy/ac13-heavy.test.ts` (novo): promoção automática real por contagem e por arquivo acima de 4 GiB, restauração e integridade, fora do glob cotidiano;
+  - `poc/test/backup-restore.test.ts`: expectativa de caminho em maiúsculas compatível com Windows ou Linux, sem relaxar a recusa e a verificação de nenhuma escrita.
+- **VERIFICADO:** `mise exec node@24.22.0 -- npm test` em `poc/`, código 0; runtime `v24.22.0`, typecheck/build e **152/152** testes passaram, sem pulados. Permissão POSIX real também exercitada com sucesso em sonda temporária. Casos, comandos, hashes e limitações em [TEST_PLAN §17](TEST_PLAN.md).
+- **F-3 real:** comando pesado do TEST_PLAN §17, código 0, **2/2**, sem pulados, em 199,5 s. 65.539 entradas e arquivo de 4.294.967.297 bytes geraram ZIP64 automaticamente e foram restaurados com hashes conferidos; fixtures removidas.
+- **Ambiente:** Ubuntu 26.04.1 x64; Node `24.22.0`; npm `11.19.1`; versões exatas de bibliotecas preservadas. Dependências preparadas por cópia temporária dos manifests sem o pacote de runtime Windows; nenhum manifesto/lockfile rastreado alterado.
+- **Conclusão formal delimitada:** implementação e suíte automática do AC-13 concluídas na PoC. **AC-13 completo não aprovado:** validação com extratores do Windows 11 permanece pendente, indisponível neste sandbox Linux. Nenhum TC completo nem gate V0 aprovado.
+- **Invariantes:** nenhuma alterada ou violada. Arquivos Markdown/YAML continuam canônicos, UUIDs e relações mantidos; corpos e anexos preservados byte a byte; backup com manifesto SHA-256 e restauração em pasta nova; OR, D-001 e progresso/null reaplicados pela suíte completa. D-012 respeitada com falhas e bloqueios explícitos.
+- **Próximo passo PROPOSTO:** comprovar a extração Windows; depois submeter F-2.v1 para aprovação e, após ela, medir amostras comprimíveis/F-3 e propor S-1 antes de codificá-lo. Nomes reservados/finais com espaço ou ponto exigem decisão; Inbox depende de Q-01/Q-02/Q-04; prova nativa depende de Q-07/Q-08. Nenhuma dessas implementações foi iniciada.
+
+## 30. Proposta concreta F-2.v1 para revisão
+
+**Data:** 19/10/2026 · **Estado: PROPOSTO.** Continuidade do planejamento após o AC-13 automático, base Git `8606c9d2fb0d94252145a81413c9061b56008d89`.
+
+- Criada [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md): composição de 21 arquivos sintéticos, semente/versionamento, variantes store/deflate, protocolo MP e casos F-3 para investigar S-1.
+- Explicitada a possível sobreposição entre razões de dados legítimos e de expansão. Sem intervalo válido, a evidência deve voltar para decisão; nenhum limite será inventado.
+- Atualizados índice, TEST_PLAN §12.2/§18, OPEN_QUESTIONS, rastreabilidade e CHANGELOG. Código, dependências e contratos não alterados; invariantes preservadas.
+- **PENDENTE:** aprovação da composição antes de gerar amostras e ZIPs de F-3; decisão sobre S-1 após medições. Sem nova execução de testes de software nesta etapa documental; resultados anteriores só são reutilizáveis com os mesmos insumos. Validação Windows do AC-13, decisões nativas/UX e Inbox continuam pendentes. Nenhum gate aprovado.
+
+## 31. F-2.v1 aprovado, criado e medido; S-1 exige decisão
+
+**Data:** 19/10/2026 · **Autorização:** “composição aprovada, pode seguir com a criação”, para a composição/experimentos da PROPOSTA_F2_V1. Aprovação posterior à proposta do §30; não decide S-1.
+
+- **Implementado:** quatro módulos `poc/bench/f2-*.ts` e `poc/test/f2-compression.test.ts`; corpus determinístico com PNG/PDF válidos, relações/UUIDs e cinco registros LF/cinco CRLF; executor com processos isolados, checkpoints e criação exclusiva de saída; limpeza dos temporários próprios. Sem novas dependências ou mudanças no código do produto.
+- **VERIFICADO:** suíte `npm test` (runtime/typecheck/build), **164/164**, código 0; duas gerações idênticas, corpus de 21 arquivos/22.021.291 bytes; **75/75** operações em 15 cenários ×5. Sessenta restaurações com inventário/hash dos corpos iguais e quinze recusas de corrupção antes da confirmação/destino. PNG/PDF também conferidos por Python zlib/pypdf estrito. Comandos, ambiente, hashes e limites em [TEST_PLAN §19](TEST_PLAN.md).
+- **Resultado:** razões legítimas e de expansão iguais (até 1.028,393772 nos níveis 6/9). Não existe intervalo no corpus para o critério vigente de S-1. Alternativas PROPOSTAS em [PROPOSTA_AC07_LIMITES §6](PROPOSTA_AC07_LIMITES.md); requer decisão da proprietária antes de alterar contrato/implementar.
+- **Preservado:** Markdown/YAML canônico, UUID v4, OR por tags, D-001, corpo Markdown, progresso/null, manifesto SHA-256 e restauração em pasta nova; D-012 respeitada. Sem código nativo/V1, limite S-1 ou gate aprovado. Validação Windows do AC-13 permanece pendente.
+
+## 32. S-1 explícito e alternativa A — 19/10/2026
+
+**DECIDIDO:** política A (D-016). **VERIFICADO:** filtro por entrada, inclusive manifesto, antes de descompressão; comparação exata BigInt; política copiada antes de callbacks; exportador store simétrico. 172/172 testes e 11/11 casos funcionais ([TEST_PLAN §20](TEST_PLAN.md)).
+
+**PROPOSTO:** candidato 128:1, com recusas legítimas documentadas em PROPOSTA_AC07_LIMITES §6.1. **PENDENTE:** aprovação numérica e ativação padrão; hoje a opção precisa ser explícita. AC-07 permanece parcial. Nenhum aplicativo nativo/GUI criado; pendências Windows/Inbox preservadas.

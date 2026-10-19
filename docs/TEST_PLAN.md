@@ -125,7 +125,7 @@ Duas mutações temporárias confirmaram que os testes falham sem a guarda do li
 
 ## 10. Critérios planejados de backup e restauração (Q-05 / D-013)
 
-**Estado:** PLANEJADOS; nenhum implementado ou executado, exceto os subcasos registrados no §13 (incremento 1 da PoC, 18/10/2026), no §14 (incremento 2) e o AC-19 no §15 (incremento 3). Fonte das regras: [VAULT_CONTRACT §7](VAULT_CONTRACT.md), D-007, D-013 e ESPECIFICACAO_V1 F-07. Revisão de 18/10/2026 dos critérios AC-01 a AC-12 de [PROPOSTA_Q05_BACKUP](PROPOSTA_Q05_BACKUP.md) §5, que permanecem lá como versão anterior; esta seção é a versão vigente. Um procedimento documentado não aprova cenário algum.
+**Estado:** PLANEJADOS; nenhum implementado ou executado, exceto os subcasos registrados no §13 (incremento 1 da PoC, 18/10/2026), no §14 (incremento 2), o AC-19 no §15 (incremento 3), o AC-07 no §16 e o AC-13 automático no §17. Fonte das regras: [VAULT_CONTRACT §7](VAULT_CONTRACT.md), D-007, D-013 e ESPECIFICACAO_V1 F-07. Revisão de 18/10/2026 dos critérios AC-01 a AC-12 de [PROPOSTA_Q05_BACKUP](PROPOSTA_Q05_BACKUP.md) §5, que permanecem lá como versão anterior; esta seção é a versão vigente. Um procedimento documentado não aprova cenário algum.
 
 | ID | Fonte | Preparação | Ação | Resultado observável |
 | --- | --- | --- | --- | --- |
@@ -141,7 +141,7 @@ Duas mutações temporárias confirmaram que os testes falham sem a guarda do li
 | AC-10 | D-013 (E-C, DQ-15) | Vault com conteúdo não canônico e com arquivos de sistema da lista fechada | Exportar com “excluir” e com “cancelar”, para o não canônico e para o grupo de arquivos de sistema | “Excluir”: o relatório lista o arquivo (ou o grupo) como excluído e o manifesto não o contém; “cancelar”: nenhum ZIP gerado; nenhum caso omite um arquivo em silêncio; um arquivo fora da lista fechada nunca é tratado como arquivo de sistema. **Extensão (A-01; PLANEJADA):** um registro inválido (`{UUID}.md` que não valida) não aparece como opção de inclusão e bloqueia a exportação até ser corrigido; um `.md` com outro nome numa pasta de registros aparece como não canônico e, se incluído, é restaurado como bytes, sem validação de registro |
 | AC-11 | D-012; F-07 | Todos os casos de falha acima | Inspecionar resultado e estados | Nenhum estado ou mensagem de “concluído” antes da verificação final |
 | AC-12 | Gate V0; TC-17; TC-21; D-013 (P-8) | Aplicativo **nativo** na plataforma-alvo de Q-07 | Exportar e restaurar pela GUI, fechar, reabrir | Repete AC-01, AC-02 e AC-06 no aplicativo real, inclusive permissões. A suíte Node/disco **não substitui** este critério; sem ele TC-13–15 não recebem PASS completo |
-| AC-13 | VAULT_CONTRACT §7.5 (ZIP64 Z-B, DQ-07) | Fixture com ZIP64 forçado (F-3) | Gerar com ZIP64 forçado, restaurar e extrair pelo extrator nativo do Windows 11 | Gravação e leitura corretas com ZIP64; resultado da extração nativa registrado; incompatibilidade inaceitável reabre DQ-07. **PENDENTE: não executado** |
+| AC-13 | VAULT_CONTRACT §7.5 (ZIP64 Z-B, DQ-07) | Fixture com ZIP64 forçado (F-3) | Gerar com ZIP64 forçado, restaurar e extrair pelo extrator nativo do Windows 11 | Gravação e leitura corretas com ZIP64; resultado da extração nativa registrado; incompatibilidade inaceitável reabre DQ-07. **VERIFICADO na PoC Node/Linux em 19/10/2026 (§17); compatibilidade com os extratores do Windows 11 PENDENTE. AC-13 completo não aprovado** |
 | AC-14 | D-013 (P-7, DQ-17) | Backup íntegro com um registro que referencia UUID inexistente | Restaurar | Restauração concluída como cópia verificada, no estado **Verificado com avisos**; o relatório contém o diagnóstico da referência ausente; nenhuma correção ou exclusão automática |
 | AC-15 | D-013 (DQ-23, DQ-24); TC-14 | Restauração interrompida de forma determinística após k arquivos (injeção no adapter) | Simular o reinício com uma nova instância | O diário existe nos dados do aplicativo, fora do vault e do destino, gravado antes de cada item criado (a pasta de destino, cada diretório e cada arquivo; A-02) e sem conteúdo de arquivos; no reinício, o destino aparece como não verificado e “Abrir” não é oferecido |
 | AC-16 | D-013 (DQ-19, DQ-23); TC-14 | Destino de restauração falha com um arquivo estranho acrescentado depois e um sentinela fora do destino | “Remover cópia incompleta” | Inspeção como no AC-06: só os arquivos e diretórios registrados no diário foram removidos, os diretórios de baixo para cima e só quando vazios (A-02); o arquivo estranho e o sentinela têm o mesmo hash; a pasta de destino continua existindo por causa do arquivo estranho; nada fora do destino é tocado; diário detalhado apagado; marcador mínimo presente enquanto a pasta de destino existir. Variante sem arquivo estranho: tudo é removido, inclusive a pasta de destino, e não resta marcador |
@@ -149,7 +149,7 @@ Duas mutações temporárias confirmaram que os testes falham sem a guarda do li
 | AC-18 | D-013 (DQ-18); TC-23; TC-24; AC-12 | Restauração no estado Verificado e vault atual com alteração pendente | Acionar “Abrir vault restaurado” | Confirmação nomeia os dois vaults; o fluxo de alterações pendentes (UX §4) é aplicado antes; o vault anterior mantém os hashes; “Abrir” não aparece nos estados Falhou ou Interrompido; a lista de vaults recentes só muda após a abertura. **Depende de GUI e do UX §4 (PROPOSTO)** |
 | AC-19 | VAULT_CONTRACT §7.4 (streaming); D-013 (DQ-03); TC-21; §12.3 | F-3 em degraus, em três séries independentes: (i) número fixo de **anexos em `assets/`** com tamanho individual crescente; (ii) arquivos de tamanho fixo em número crescente; (iii) **registros Markdown** de tamanho individual crescente (revisão de 18/10/2026, A-06) | Exportar, verificar e restaurar em cada degrau, medindo pico de memória e tempo por fase (protocolo MP), com as fases de hash, compactação e extração separadas da validação de registros | Curvas registradas por série, fase e degrau. O requisito de streaming só é considerado atendido se, na série (i), o pico de memória das fases de hash, compactação e extração não acompanhar o tamanho dos anexos. Na série (ii), a dependência do número de entradas é registrada e comparada com o que o requisito admite para metadados. Na série (iii), a memória da validação de registros pode acompanhar o maior registro, como o contrato admite; ela é registrada e não reprova o critério. Nenhum resultado é presumido antes da execução |
 
-AC-01 a AC-11, AC-13 e AC-14 podem ser exercitados por uma PoC Node com disco real, após autorização e escolha da biblioteca. AC-07 depende de valores ainda não aprovados (DQ-03 e medição; desde o bloco 2, só os valores de segurança, porque a capacidade é verificada em execução). AC-13 tem política definida (Z-B), mas não foi executado. AC-12 exige a prova nativa.
+AC-01 a AC-11, AC-13 e AC-14 podem ser exercitados por uma PoC Node com disco real, após autorização e escolha da biblioteca. Para os valores do AC-07, resta decidir somente a razão de compressão S-1, dependente de F-2.v1 e F-3 maliciosas; os demais valores foram aprovados pela D-015 e executados na PoC (§16). A capacidade é verificada em execução, sem teto derivado de F-2. AC-13 tem política definida (Z-B); a parte automática foi executada em 19/10/2026 (§17), e a extração nativa do Windows continua pendente. AC-12 exige a prova nativa.
 
 **Atualização de 18/10/2026 (bloco 2; AC-15 a AC-19 acrescentados pela DQ-25):**
 
@@ -202,7 +202,7 @@ Windows 11 x64 em NTFS é a plataforma prioritária para desenvolver e validar a
 | Fixture | Finalidade | Composição | Estado |
 | --- | --- | --- | --- |
 | F-1 funcional | AC-01–AC-11, AC-14–AC-17 | Poucas dezenas de arquivos: todos os tipos de registro, arquivados, CRLF/LF, Unicode e nomes que diferem só por caixa, anexos binários em `assets/` com subpasta, `settings.yml`, arquivos de sistema, uma pasta vazia, um arquivo não canônico, uma pasta de cache de outra ferramenta (não canônica), um `.tmp-{UUID}.md` órfão; variantes com `.txn_*`, junção e symlink | Composição aprovada; atualizada no bloco 2 (D-014, DQ-13, DQ-15); não construída |
-| F-2 referência | Comparação de medições entre versões | Conjunto **sintético**, reproduzível (gerador com semente registrada) e versionado (F-2.vN), com proporção de Markdown e anexos já comprimidos (PDF, imagem), incluindo amostras muito comprimíveis. Não representa nem limita o volume futuro do Atlas. A composição de F-2.v1 é proposta após a primeira rodada exploratória e aprovada pela proprietária; versões novas não invalidam as anteriores | **Modelo progressivo decidido (DQ-03, bloco 2).** F-2.v1 ainda não proposto nem aprovado. Não construída |
+| F-2 referência | Comparação de medições entre versões | Conjunto **sintético**, reproduzível (gerador com semente registrada) e versionado (F-2.vN), com proporção de Markdown e anexos já comprimidos (PDF, imagem), incluindo amostras muito comprimíveis. Não representa nem limita o volume futuro do Atlas. A composição de F-2.v1 é proposta após a primeira rodada exploratória e aprovada pela proprietária; versões novas não invalidam as anteriores | **Modelo progressivo decidido (DQ-03, bloco 2).** Composição aprovada pela proprietária em 19/10/2026 em [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md); construída e medida na PoC/Linux (§19). S-1 continua pendente |
 | F-3 estresse | Capacidade, limites de segurança e ZIP64 | Gerada no temporário, em degraus crescentes que variam separadamente o número de arquivos e o tamanho de arquivos individuais, registrando tempo, memória e disco por degrau (MP), até falha controlada ou limitação técnica real do ambiente. Inclui ao menos um caso acima de 65.535 entradas e um arquivo acima de 4 GiB, ou ZIP64 forçado pela biblioteca quando o tamanho real for inviável, e ZIPs maliciosos de expansão e de cabeçalho falso | Composição aprovada; degraus acrescentados no bloco 2 (DQ-03). Em 18/10/2026, os degraus do AC-19 foram gerados por `poc/bench/ac19-fixture.ts` (§15); o caso de ZIP64 e os ZIPs maliciosos de expansão e de cabeçalho falso não foram construídos |
 
 *Emenda de 18/10/2026 (bloco 2, DQ-03).* Redação anterior, preservada:
@@ -239,7 +239,7 @@ A PoC Node atual **não comprova, por si só**, a detecção completa de todas a
 
 ### 12.6 ZIP64 (DQ-07)
 
-Política Z-B formalizada em VAULT_CONTRACT §7.5. AC-13 (§10) continua **PENDENTE**: biblioteca, leitor, extração pelo Explorador do Windows e fluxo completo não foram validados.
+Política Z-B formalizada em VAULT_CONTRACT §7.5. **Atualização de 19/10/2026:** gravação, leitura, restauração e recusas de ZIP64 foram verificadas na PoC Node/Linux (§17). A compatibilidade com os extratores do Windows 11, incluindo o Explorador, permanece **PENDENTE**; AC-13 completo não está aprovado. Estado anterior: biblioteca, leitor e fluxo completo ainda não validados.
 ## 13. Execução parcial: exportação da PoC (incremento 1, 18/10/2026)
 
 **Comando:** `npm test` em `poc/` · **Resultado:** código 0; runtime `v24.22.0`; verificação de tipos e build passaram; **71 testes passaram, 0 falharam** (37 anteriores e 34 novos em `test/backup-manifest.test.ts` e `test/backup-export.test.ts`). Execução na plataforma prioritária (Windows 11 x64/NTFS), sessão não elevada, com Modo de Desenvolvedor ativo. Duas mutações temporárias no build confirmaram que os testes discriminam: sem a nova varredura da C-A, 7 testes falham; sem a releitura do ZIP, o teste do ZIP corrompido falha. O build foi refeito a partir do código-fonte antes da execução final.
@@ -432,3 +432,126 @@ npm test
 - nomes reservados de dispositivo e nomes terminados em espaço ou ponto (pendentes).
 
 **Estado:** AC-07 executado na PoC Node para todos os valores da D-015 exceto a razão de compressão. Não é PASS completo: faltam o S-1 e a prova nativa, e TC-14 não é aprovado.
+
+## 17. AC-13: conclusão automática da PoC e compatibilidade pendente (19/10/2026)
+
+**Estado:** VERIFICADO para a parte automática da PoC Node. **AC-13 completo PENDENTE** da extração pelos componentes do Windows 11; não aprova TC-13–TC-15 nem o gate V0. A política Z-B e os contratos de produto não mudaram.
+
+### 17.1 Ambiente e revisão
+
+- Ubuntu 26.04.1 x64, Node `v24.22.0` instalado por mise, npm `11.19.1`, TypeScript `7.0.2` estrito, `yauzl` `3.4.0` e `yazl` `3.3.1`.
+- Base Git `0fa1eaf7df348358fc85372dfec89c95a269cfe6`, branch `coderabbit/complete-zip64-backup-validation/9a96eb20`, com alterações locais descritas em IMPLEMENTATION_STATUS §29.
+- O manifesto fixa um runtime Windows. Para esta execução, somente cópias temporárias de `package.json` e `package-lock.json` tiveram `node-win-x64` removido antes de `npm ci`; as demais versões/integridades são as do lockfile. Os arquivos rastreados não foram alterados. Não comprova compatibilidade geral do aplicativo com Linux.
+- Fixtures sintéticas em diretórios temporários; nenhum vault pessoal. Os testes removem as próprias fixtures. Os casos pesados executam uma vez cada: provas de estrutura e integridade, sem pretensão de medição MP/AC-19.
+
+### 17.2 Comandos e resultados observados
+
+Em `poc/`:
+
+```bash
+mise exec node@24.22.0 -- npm test
+ATLAS_AC13_HEAVY=1 mise exec node@24.22.0 -- node --test --test-reporter=tap --test-concurrency=1 dist/test/heavy/ac13-heavy.test.js
+```
+
+O primeiro comando executa runtime, typecheck, build e `node --test "dist/test/*.test.js"`. Os três testes iniciais de AC-13 entram nesse glob; os casos pesados são explícitos e ficam fora da suíte cotidiana.
+
+Saída real da suíte principal, código **0**:
+
+```text
+ℹ tests 152
+ℹ pass 152
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+```
+
+| Caso | Evidência observada |
+| --- | --- |
+| ZIP clássico pequeno | Quatro entradas; sem EOCD ZIP64/localizador nem extra ZIP64 no diretório central |
+| ZIP64 forçado | Localizador e EOCD ZIP64 presentes; contagem 4; sentinelas `0xffff`/`0xffffffff`; extra ZIP64 em cada entrada; manifesto relido igual; restauração em pasta nova, bytes e SHA-256 iguais à origem |
+| ZIP64 adulterado | Conteúdo alterado → `hash-mismatch`; localizador fora do arquivo ou registro ZIP64 final ausente → `invalid-archive`. Todos na pré-validação, antes da confirmação, sem destino/dados do aplicativo criados e com origem intacta |
+| Permissões sintéticas | `EACCES` e `EPERM` na criação do temporário e do destino: falha explícita, sem ZIP publicado/destino criado, sem estado de sucesso |
+| Mais de 65.535 entradas reais | 65.536 anexos × 4 KiB + Tag + `settings.yml` + manifesto = **65.539 entradas**. Promoção ZIP64 automática, sem `forceZip64`; 65.538 arquivos extraídos e conferidos. Hash SHA-256 da lista do manifesto: `357c161d1f347a26ec113e3bd09e3a5ce4994d9cec40ac1f703f063566e06708`. Teste passou em 137,4 s, incluindo limpeza |
+| Arquivo real acima de 4 GiB | **4.294.967.297 bytes**; promoção automática sem `forceZip64`; tamanhos clássicos em `0xffffffff`, tamanho ZIP64 relido exato e diretório central no offset **4.294.968.270**. Restauração Verificada, 3/3 arquivos. SHA-256 do anexo restaurado: `fbb82f7b353676bb562eb82157fcf0ea42c36492ca13ee56dbf82c08b6802c5c`. Teste passou em 61,9 s |
+
+Saída real dos casos pesados, código **0**, em 199,5 s:
+
+```text
+ok 1 - AC-13 real: mais de 65.535 entradas promovem automaticamente para ZIP64 e restauram
+ok 2 - AC-13 real: arquivo acima de 4 GiB promove tamanho e offsets para ZIP64 e restaura
+# tests 2
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+```
+
+Os testes pesados usam o gerador/seed `atlas-ac19-v1` para a base. O arquivo grande tem origem esparsa de zeros, mas o ZIP usa store e a extração grava os bytes reais. O leitor auxiliar inspeciona rodapé/diretório central, usa leituras completas com limites de arquivo e não lê o ZIP inteiro; a integridade é conferida pelo verificador de produção e pela restauração.
+
+**Regressão de I/O:** a suíte completa reexecutou EIO sintético, conflito, limpeza do temporário próprio, colisão sem sobrescrita, limites de espaço simulado, estruturas corrompidas e manutenção do diário. Uma sonda adicional em disco real, `mise exec node@24.22.0 -- node /tmp/atlas-check-permissions.mjs`, terminou com código 0: `chmod 0500` produziu EACCES real na exportação e na criação do destino; nenhum ZIP/destino falso, vault ativo intacto. Permissões restauradas e temporários removidos. Não simula disco fisicamente cheio nem permissões/GUI nativas do Windows.
+
+**Falhas anteriores desta sessão:** execução inicial 144/146, por expectativa de caminho em maiúsculas do Windows no Linux; corrigida a expectativa conforme plataforma. Uma execução intermediária expôs cleanup global da fixture ao introduzir subtestes; substituído por cleanup no contexto proprietário. A execução final acima passou integralmente. A fixture de Markdown dos testes iniciais estava correta.
+
+### 17.3 Limite de aceite e próxima etapa
+
+**BLOQUEADO no sandbox Linux:** extração por `Shell.Application`/zipfldr, `tar.exe`, `Expand-Archive` e abertura manual no Explorador do Windows 11. Nenhum resultado dessas ferramentas foi inferido da leitura Node. Registrar extração e hashes separadamente na plataforma prioritária; incompatibilidade inaceitável reabre DQ-07, conforme VAULT_CONTRACT §7.5.
+
+Próximo incremento **PROPOSTO**, antes de editar código estrutural: aprovar a composição F-2.v1; depois gerar amostras comprimíveis legítimas e F-3 maliciosas, medir razões e propor S-1 para decisão. Só após essa decisão implementar a razão de compressão do AC-07. Inbox depende das decisões Q-01/Q-02/Q-04; regras de nomes e prova nativa continuam com as dependências do relatório de 18/10, item 6.
+
+## 18. Planejamento de F-2.v1 e S-1 — 19/10/2026
+
+**PROPOSTO:** [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md) detalha 21 arquivos sintéticos, variantes store/deflate, casos F-3 e o tratamento da possível sobreposição entre razões legítimas e de expansão. Não houve geração, medição ou aprovação da composição. O critério vigente do VAULT_CONTRACT §7.5 não mudou. A tabela §12.2 foi atualizada apenas quanto à existência da proposta; as notas históricas descrevem suas respectivas datas.
+
+## 19. F-2.v1 e F-3: medições para S-1 — 19/10/2026
+
+**DECIDIDO:** composição e experimentos das seções 2–5 da [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md), aprovados pela proprietária com “composição aprovada, pode seguir com a criação”. Não aprova um valor de S-1, mudança de contrato ou stack nativa.
+
+**Implementação:** `poc/bench/f2-fixture.ts`, `f2-archive.ts`, `f2-worker.ts`, `f2-run.ts` e `poc/test/f2-compression.test.ts`. Gerador exige raiz nova; saída do executor usa criação exclusiva; geração e artefatos de cada medição ficam no temporário exclusivo e são removidos ao final. Exportador de produção e dependências preservados.
+
+### 19.1 Ambiente e reprodução
+
+Ubuntu 26.04.1 x64, kernel 6.18.49, CPU Intel Xeon 2,90 GHz, 4 CPUs lógicas, 8.812.408.832 bytes de RAM visível; filesystem tipo `1481003842` (overlayfs). Node `24.22.0`, zlib `1.3.2.1-motley-285e94b`, OpenSSL `3.5.8`, yazl `3.3.1`, yauzl `3.4.0`, yaml `2.9.1`. Base Git `8606c9d2fb0d94252145a81413c9061b56008d89`, com alterações locais identificadas por SHA-256 em `sourceHashes` do JSONL. Antivírus/energia não medidos no sandbox; cache frio não comprovado. Cada operação roda em processo novo, com timeout de 120 s, amostragem de memória a cada 5 ms e maxRSS do processo. External e arrayBuffers são registrados separadamente. Gerador e processos de controle não integram o maxRSS do worker.
+
+Comandos realmente executados (em `poc/`, exceto `--prefix poc` a partir da raiz):
+
+```bash
+mise exec node@24.22.0 -- npm test --prefix poc
+mise exec node@24.22.0 -- node dist/bench/f2-run.js --out bench/results/f2-2026-10-19.jsonl
+mise exec node@24.22.0 -- node dist/bench/f2-run.js --summarize bench/results/f2-2026-10-19.jsonl
+```
+
+Os três comandos terminaram com código 0. Suíte ampliada: **164/164**, zero falhas/pulados. O teste de identidade fixa o hash F-2.v1 abaixo; futuras alterações de bytes exigem revisão da versão. Após a medição foram acrescentadas a asserção de identidade e a recusa de resumos parciais/duplicados/com falhas, com testes. Nenhum gerador, compressor, worker ou laço de medição foi alterado nesse intervalo; os hashes dos insumos medidos permanecem no JSONL. Instruções Windows com runtime fixado em [poc/README](../poc/README.md); não executadas aqui.
+
+### 19.2 Corpus e resultados observados
+
+- Duas gerações em pastas diferentes produziram inventários idênticos: **21 arquivos, 22.021.291 bytes**, mais o manifesto no ZIP (22 entradas).
+- Identidade do inventário ordenado de caminho/tamanho/hash, incluindo hash dos corpos: `5e22d0a099e2ed05a793d9600d2cfe6687fd668ed2434c6de655b6d2f384b16a`.
+- PNG: 196.992 bytes, SHA-256 `cbe66b4fc363e667ec7293a727574844e40614a7556f4108fdaad17dfa0bac62`; PDF: 197.367 bytes, SHA-256 `c23aca7ef4ff663cfa854ec6079062e7617297ee53eed5bc9856639b5b95a4f4`. Além dos testes TS, Python zlib conferiu CRCs/scanlines do PNG e pypdf 6.21.1 leu o PDF em modo estrito (1 página, raster RGB 256 × 256).
+- **75/75 operações:** 15 cenários × 5 execuções. F-2 e F-3 expansão 8/32 × 8 MiB em store/deflate 1/6/9 (60 restaurações verificadas com inventário de arquivos/corpos idêntico); tamanho falso, hash falso e deflate truncado no nível 6 (15 recusas seguras).
+- Todas as corrupções falharam em `pre-validation`, sem confirmação, destino criado ou disponibilização de cópia. Tamanho falso mantém manifesto/diretório central coerentes entre si; a contagem real falha. Stream truncado usa metade do payload comprimido acessível, preservando fisicamente o restante do ZIP e o diretório central.
+
+| Método/nível | Máximo legítimo (inclui manifesto) | Mínimo dos payloads F-3 de expansão | Comparação dos zeros de 8 MiB |
+| --- | ---: | ---: | --- |
+| store | 1,000000 | 1,000000 | Mesmos U/C/hash/método |
+| deflate 1 | 229,146853 | 229,146853 | Mesmos U/C/hash/método |
+| deflate 6 | 1.028,393772 | 1.028,393772 | Mesmos U/C/hash/método |
+| deflate 9 | 1.028,393772 | 1.028,393772 | Mesmos U/C/hash/método |
+
+Razão por entrada = bytes descompactados reais / payload comprimido, sem cabeçalhos; vazios têm razão não aplicável. [Dados brutos](../poc/bench/results/f2-2026-10-19.jsonl) e [resumo por cenário/fase](../poc/bench/results/f2-2026-10-19.md) registram primeira execução, mediana/máximo das seguintes, memória, hashes e disco. `logicalPeakBytes` mede ZIP + cópia restaurada, sem incluir fonte, diário/metadados; espaço livre observado inclui ruído de outros processos. Não houve medição de reindexação completa de aplicativo.
+
+### 19.3 Consequência e pendências
+
+**VERIFICADO neste corpus:** não há intervalo acima do máximo legítimo e abaixo das razões de expansão para satisfazer o critério 3 vigente de VAULT_CONTRACT §7.5. Bytes iguais sob os mesmos parâmetros comprimem igual, independentemente de intenção; repetir entradas aumenta custo total sem mudar a razão individual.
+
+**PENDENTE:** decisão sobre a revisão desse critério e a política S-1, com alternativas em [PROPOSTA_AC07_LIMITES §6](PROPOSTA_AC07_LIMITES.md). Nenhum limiar foi inventado ou codificado. Os limites já existentes e o exportador store permanecem vigentes. AC-07 completo, Windows/NTFS, TC-21 e gate V0 não aprovados. Nomes reservados, stack/UX e Inbox continuam com suas decisões próprias.
+
+## 20. S-1 explícito — 19/10/2026
+
+**VERIFICADO na PoC/Linux:** Node 24.22.0; `mise exec node@24.22.0 -- npm test --prefix poc`, executado da raiz: 172 testes, 172 pass, 0 fail/skipped, saída 0. Inclui typecheck/build e regressões de I/O, corrupção e permissões existentes.
+
+`poc/test/backup-compression.test.ts` cobre limite inclusivo, tamanhos zero, aritmética BigInt/ZIP64, configuração inválida, recusa antes de confirmação/escrita de ZIP clássico/forçado e manifesto comprimido, restauração store byte a byte, deflate permitido e estabilidade da política durante callbacks. Contagem real do yauzl continua ativa (S-2).
+
+`mise exec node@24.22.0 -- node poc/dist/bench/s1-run.js poc/bench/results/s1-2026-10-19.jsonl`: saída 0, 11/11 casos esperados (2 restaurações verificadas e 9 recusas). [Dados reais](../poc/bench/results/s1-2026-10-19.jsonl). Usa caminho de saída novo; recusa sobrescrever evidência existente. Experimento funcional, sem certificação de desempenho.
+
+**PENDENTE:** aprovação do valor numérico; omissão de `maxCompressionRatio` não ativa S-1. Suíte histórica F-2 permanece sem essa opção para preservar evidência de compatibilidade. AC-07 completo não aprovado; extração Windows/AC-13 permanece bloqueada neste Linux. Não repetidos testes pesados >4 GiB: cobertura deste incremento usa ZIP64 forçado e aritmética exata; resultados pesados anteriores não certificam esta alteração.

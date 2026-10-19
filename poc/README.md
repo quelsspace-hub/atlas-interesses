@@ -77,6 +77,30 @@ npm test
 
 `npm ci` precisa de Node/npm capaz de executar o instalador. Após a instalação local, `npm test` verifica o Node pinado, executa TypeScript em modo estrito, compila e roda os testes nativos do Node. A saída documentada em [IMPLEMENTATION_STATUS.md](../docs/IMPLEMENTATION_STATUS.md) registra os comandos realmente executados.
 
+## ZIP64 — AC-13 (19/10/2026)
+
+`npm test` inclui os três cenários ZIP64 leves (clássico, forçado/restaurado e adulterado) e recusas por permissões injetadas. `forceZip64` é uma opção experimental de teste em `exportBackup`; o padrão continua Z-B, com promoção automática só quando necessária.
+
+Os casos reais de mais de 65.535 entradas e de um arquivo acima de 4 GiB são executados separadamente, com disco disponível para o ZIP e a restauração (mais de 8 GiB no caso grande):
+
+```powershell
+npm run build
+$env:ATLAS_AC13_HEAVY = '1'
+.\node_modules\node-win-x64\bin\node.exe --test --test-reporter=tap --test-concurrency=1 dist/test/heavy/ac13-heavy.test.js
+Remove-Item Env:ATLAS_AC13_HEAVY
+```
+
+No Linux, com as dependências já preparadas e Node 24.22.0 via mise:
+
+```bash
+mise exec node@24.22.0 -- npm test
+ATLAS_AC13_HEAVY=1 mise exec node@24.22.0 -- node --test --test-reporter=tap --test-concurrency=1 dist/test/heavy/ac13-heavy.test.js
+```
+
+O manifesto/lockfile do repositório fixa `node-win-x64` e `npm ci` direto não é um procedimento Linux. Nesta validação foram usadas cópias temporárias dos dois arquivos removendo somente esse pacote e sua entrada do lock; `npm ci --prefix /tmp/atlas-poc-deps --no-audit --no-fund` instalou as demais dependências, e `node_modules` foi movido para `poc/`. Os arquivos rastreados permaneceram intactos. npm observado: 11.19.1, diferente do histórico Windows 10.8.2.
+
+Evidência e limites: [TEST_PLAN §17](../docs/TEST_PLAN.md) e [IMPLEMENTATION_STATUS §29](../docs/IMPLEMENTATION_STATUS.md). A extração pelos componentes do Windows 11 continua pendente. Validar no Node/Linux não aprova essa compatibilidade nem o AC-13 completo.
+
 ## Limites da escrita
 
 O adapter cria destinos com abertura exclusiva (`wx`), não com consulta prévia de existência. Para editar, calcula a revisão SHA-256 lida, grava e sincroniza um temporário ao lado do destino, relê o original imediatamente antes de `rename`, compara a revisão e confere o conteúdo persistido depois do rename. Conflitos preservam os bytes externos e carregam o rascunho local e hashes no diagnóstico. A limpeza só remove um temporário depois de a abertura exclusiva o criar; erro `EEXIST` não remove o arquivo alheio. Falha após possível substituição resulta em estado incerto; não há rollback automático.
@@ -101,3 +125,39 @@ A comparação de SHA-256 imediatamente antes de `rename` **não é compare-and-
 - **TC-17:** não executado. Testes de falha Node não representam permissão, ciclo GUI ou I/O nativo.
 
 Nenhum desses subcasos marca um TC completo como aprovado.
+
+## Experimento aprovado F-2.v1 / F-3 para S-1
+
+Composição aprovada em 19/10/2026: [PROPOSTA_F2_V1](../docs/PROPOSTA_F2_V1.md). Gerador `bench/f2-fixture.ts`, ZIP experimental `bench/f2-archive.ts`, worker isolado `bench/f2-worker.ts` e orquestrador `bench/f2-run.ts`. A suíte principal inclui `test/f2-compression.test.ts`. Sem novas dependências e sem mudança no exportador store do produto.
+
+Comandos a partir de `poc/`, após preparar as dependências. Use um nome de saída novo: o executor recusa sobrescrever resultados existentes.
+
+Windows, runtime fixado no projeto:
+
+```powershell
+npm test
+.\node_modules\node-win-x64\bin\node.exe dist/bench/f2-run.js --out bench/results/f2-nova-execucao.jsonl
+.\node_modules\node-win-x64\bin\node.exe dist/bench/f2-run.js --summarize bench/results/f2-nova-execucao.jsonl
+```
+
+Linux, dependências já preparadas:
+
+```bash
+mise exec node@24.22.0 -- npm test
+mise exec node@24.22.0 -- node dist/bench/f2-run.js --out bench/results/f2-nova-execucao.jsonl
+mise exec node@24.22.0 -- node dist/bench/f2-run.js --summarize bench/results/f2-nova-execucao.jsonl
+```
+
+São 75 operações em processos separados: F-2 e expansão F-3 (8/32 × 8 MiB), cada um em store/deflate 1/6/9, mais tamanho falso, hash falso e stream truncado em deflate 6; cinco execuções por cenário. Cada worker tem timeout de 120 s. O laboratório exige 2 GiB livres antes de começar e gera arquivos em pasta temporária exclusiva, removida ao final. Esses controles do experimento não são limites do produto. Uma falha gera saída parcial e código diferente de zero; o resumidor recusa experimentos incompletos, cenários duplicados ou operações com falha.
+
+O stream truncado é simulado limitando a metade o trecho comprimido acessível na entrada, sem remover fisicamente o resto do ZIP. O diretório central permanece acessível. O tamanho falso é coerente entre manifesto e tamanho descompactado central, mas diverge dos bytes reais. Todos entram pelo `restoreBackup` público.
+
+O inventário inclui hashes de arquivo/corpo; duas gerações independentes devem ser iguais. AES-256-CTR usa chave SHA-256 de `semente + NUL + key:rótulo` e IV nos primeiros 16 bytes de SHA-256 de `semente + NUL + iv:rótulo`. UUIDs derivam de `uuid:rótulo`, com bits v4/variante ajustados. PNG usa filtros zero e zlib nível 9; PDF 1.4 usa xref clássico e raster FlateDecode nível 9. Conteúdo e manifesto usam timestamp fixo. O ZIP experimental também informa esse mtime; diferenças de plataforma/metadados não são usadas como identidade do corpus.
+
+Dados brutos e resumo da execução Linux: [JSONL](bench/results/f2-2026-10-19.jsonl) e [resumo](bench/results/f2-2026-10-19.md). Resultados e decisão S-1 em [TEST_PLAN §19](../docs/TEST_PLAN.md). Resultados Linux não validam Windows/NTFS, e a existência do corpus não aprova AC-07.
+
+## S-1: política explícita de compressão
+
+`exportBackup`, `restoreBackup` e `verifyBackupArchive` aceitam `maxCompressionRatio`, inteiro seguro ≥ 1. **Omitir a opção não aplica S-1**; não há valor padrão aprovado. A razão inclui manifesto; igualdade é aceita. O exportador usa store em todas as entradas. ZIP externo legítimo pode ser recusado e exigir reexportação store.
+
+Candidato **PROPOSTO**, não padrão: 128:1. Da raiz, após `npm test --prefix poc`, execute `node poc/dist/bench/s1-run.js /caminho/novo-resultados.jsonl` (Node 24.22.0). O runner exige saída inexistente. Evidência e consequências em [TEST_PLAN §20](../docs/TEST_PLAN.md) e [proposta §6.1](../docs/PROPOSTA_AC07_LIMITES.md).

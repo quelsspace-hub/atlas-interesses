@@ -225,7 +225,9 @@ A classificação não autoriza ignorar limites reais do formato ZIP, do SO, do 
 
 1. Os limites de segurança são fixados por critérios técnicos e pelos casos maliciosos de F-3, nunca por um múltiplo de F-2.
 2. Os limites de capacidade são verificados contra o ambiente e o formato. As medições de F-3 descrevem a curva de capacidade (tempo, memória, disco) e não criam teto de tamanho. O processamento segue o requisito de streaming do §7.4. Metas de tempo e desempenho pertencem à Q-07, que continua aberta.
-3. No caso da razão de compressão, ficar acima da maior razão observada em dados legítimos, incluindo amostras sintéticas muito comprimíveis de F-2, e abaixo da razão dos ZIPs maliciosos de F-3, sempre combinada com a contagem de bytes reais.
+3. **Emenda D-016 (19/10/2026):** a razão é um filtro conservador de formato e pode recusar ZIPs externos legítimos muito comprimíveis. Não distingue intenção maliciosa. O valor numérico exige decisão apoiada em medições; combinar sempre com contagem de bytes reais. A exportação Atlas deve permanecer restaurável usando store para conteúdos que excederiam o limite. A recusa deve explicar a possibilidade de conteúdo legítimo e orientar nova exportação sem compressão pela ferramenta de origem.
+
+   *Critério anterior substituído: ficar acima da maior razão legítima, incluindo F-2 muito comprimível, e abaixo das razões maliciosas de F-3. A medição demonstrou sobreposição.*
 4. No caso de caminhos, garantir que o caminho absoluto restaurado caiba no limite da plataforma, considerando um caminho de destino típico.
 
 Valores que não satisfaçam os critérios voltam para decisão.
@@ -241,7 +243,7 @@ Valores que não satisfaçam os critérios voltam para decisão.
 | Segurança | Comprimento de cada segmento | ≤ 255 caracteres |
 | Segurança | Profundidade do caminho relativo | ≤ 32 segmentos |
 | Segurança | Travessia, caminho absoluto, letra de unidade | Recusa (regra existente) |
-| Segurança | Razão de compressão por entrada | **PENDENTE:** sem valor. Depende de F-2.v1 com amostras muito comprimíveis e dos ZIPs maliciosos de F-3 (critério 3) |
+| Segurança | Razão de compressão por entrada | **PENDENTE:** valor padrão. Política A decidida (D-016); candidato 128:1 avaliado, não aprovado. PoC aceita `maxCompressionRatio` explícito; omiti-lo mantém S-1 desativado |
 | Capacidade | Entradas, tamanho por arquivo, total, memória, tempo | Sem teto; falha controlada quando houver impossibilidade real. Metas: Q-07 |
 | Capacidade | Espaço livre | Restauração: ≥ total declarado. Exportação: ≥ Σ tamanhos + N × (100 + 2 × 3.072) + teto do manifesto |
 | Capacidade | Caminho absoluto no destino | Verificado antes da confirmação contra o limite que a plataforma oferece de fato ao aplicativo: cerca de 32.767 caracteres com `LongPathsEnabled` = 1 **e** aplicativo `longPathAware`; caso contrário, 259 para arquivos e 247 para diretórios. Ao ultrapassar, falha controlada com diagnóstico |
@@ -259,7 +261,7 @@ Consequência aceita na D-015: com caminhos acima de 259 caracteres, o vault res
 | Critérios de fixação | FORMALIZADOS (DQ-05, emendados pela DQ-03) |
 | Valores de segurança | **DECIDIDOS em 18/10/2026 (D-015)**, exceto a razão de compressão, que continua sem valor; implementados na PoC Node em 18/10/2026 ([TEST_PLAN §16](TEST_PLAN.md)), não no aplicativo nativo. *Estado intermediário: “não implementados”.* *Estado anterior: “Nenhum aprovado. Dependem de critérios técnicos, de F-3 e de medição pelo protocolo de TEST_PLAN §12. Proposta de valores registrada em 18/10/2026 em PROPOSTA_AC07_LIMITES: PROPOSTO, não aprovado, não substitui esta linha”* |
 | Capacidade | Verificada em execução; não tem valor fixo a aprovar. Metas de desempenho: Q-07, aberta. Curvas de tempo, memória e disco de um equipamento: [TEST_PLAN §15](TEST_PLAN.md) |
-| Testes de validação | AC-07: executado na PoC Node em 18/10/2026 com os valores da D-015, sem a razão de compressão ([TEST_PLAN §16](TEST_PLAN.md)); *estado intermediário: “PLANEJADO, não executado”*. AC-13 (ZIP64): PENDENTE, não executado. AC-19 (streaming): executado na PoC Node em 18/10/2026, com o critério da série (i) observado como atendido naquele equipamento, com ressalva ([TEST_PLAN §15](TEST_PLAN.md)); TC-21 não aprovado. *Estado anterior: “AC-07, AC-13 (ZIP64) e AC-19 (streaming), PLANEJADOS e não executados”* |
+| Testes de validação | AC-07: executado na PoC Node em 18/10/2026 com os valores da D-015, sem a razão de compressão ([TEST_PLAN §16](TEST_PLAN.md)); *estado intermediário: “PLANEJADO, não executado”*. AC-13 (ZIP64): validação automática executada na PoC Node/Linux em 19/10/2026 ([TEST_PLAN §17](TEST_PLAN.md)); extração nativa no Windows 11 pendente, sem aprovação completa. *Estado anterior: PENDENTE, não executado.* AC-19 (streaming): executado na PoC Node em 18/10/2026, com o critério da série (i) observado como atendido naquele equipamento, com ressalva ([TEST_PLAN §15](TEST_PLAN.md)); TC-21 não aprovado. *Estado anterior: “AC-07, AC-13 (ZIP64) e AC-19 (streaming), PLANEJADOS e não executados”* |
 
 **RECOMENDAÇÃO de formato na restauração:** aceitar somente os métodos store (0) e deflate (8); recusar entradas criptografadas, arquivo multi-disco, diretório com dados e entradas não declaradas no manifesto.
 
@@ -273,7 +275,7 @@ Consequência aceita na D-015: com caminhos acima de 259 caracteres, o vault res
 
 **Decisão (DQ-07):** Z-B. Gerar ZIP64 somente quando o arquivo ou o volume exceder os limites do ZIP clássico e aceitá-lo na restauração dentro dos limites de §7.5. Se os valores aprovados ficarem abaixo dos tetos clássicos, o ZIP64 simplesmente não será gerado.
 
-Condição de compatibilidade: verificar por AC-13 a gravação e leitura com ZIP64 forçado e a extração pelo extrator nativo do Windows 11 (plataforma prioritária, DQ-01). **AC-13 está PENDENTE.** Nem a biblioteca, nem o leitor, nem a extração pelo Explorador do Windows, nem o fluxo completo foram validados. Se AC-13 mostrar incompatibilidade inaceitável, a escolha é reaberta.
+Condição de compatibilidade: verificar por AC-13 a gravação e leitura com ZIP64 forçado e a extração pelo extrator nativo do Windows 11 (plataforma prioritária, DQ-01). **Atualização de 19/10/2026:** biblioteca, leitor e restauração foram verificados na PoC Node/Linux ([TEST_PLAN §17](TEST_PLAN.md)). A extração pelos componentes do Windows 11 permanece **PENDENTE**; AC-13 completo não está aprovado. *Estado anterior: nem a biblioteca, nem o leitor, nem o fluxo completo haviam sido validados.* Se AC-13 mostrar incompatibilidade inaceitável, a escolha é reaberta.
 
 Recomendação anterior, preservada como histórico: “Z-B, com teste explícito de leitura e gravação com ZIP64 forçado e registro da compatibilidade com o extrator nativo da plataforma da Q-07. Se os limites numéricos da Q-07 ficarem abaixo dos tetos do ZIP clássico, Z-A torna-se equivalente e mais simples. A escolha fica com a proprietária após a Q-07.”
 

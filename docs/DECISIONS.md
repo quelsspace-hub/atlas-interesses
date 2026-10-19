@@ -196,3 +196,14 @@ Autorização: a proprietária autorizou resolver essas lacunas pela opção con
 ## Como mudar uma decisão
 
 Registre problema, alternativa, impacto sobre arquivos existentes, migração, testes e decisão da proprietária. Atualize documentos dependentes e preserve o registro anterior no Git. Não reutilize IDs de decisão com outro significado.
+
+## D-016 — Política S-1 de recusa por razão de compressão
+
+- **DECIDIDO em 19/10/2026:** proprietária autorizou seguir a recomendação A de PROPOSTA_AC07_LIMITES §6.
+- **Problema:** dados legítimos e expansão F-3 têm razões iguais; o critério anterior não é satisfazível no corpus.
+- **Decisão:** filtro conservador pode recusar ZIPs externos legítimos; diagnóstico orienta reexportação store. Exportações Atlas devem continuar restauráveis. Contrato responsável: [VAULT_CONTRACT §7.5](VAULT_CONTRACT.md).
+- **Alternativa não escolhida:** B, substituir a recusa por uma futura política de recursos.
+- **PROPOSTO:** 128:1 como orçamento por entrada. Não é um limiar ótimo nem garantia contra exaustão agregada.
+- **PENDENTE:** aprovação numérica antes de instalar um padrão. API experimental com valor explícito implementada; omissão não aplica S-1.
+- **Impacto/migração:** nenhuma mudança no Markdown/YAML ou manifesto; arquivos externos acima do limite explícito passam a ser recusados. Exportador atual usa store em todas as entradas.
+- **VERIFICADO:** TEST_PLAN §20; AC-07 completo continua pendente.

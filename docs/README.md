@@ -29,6 +29,7 @@
 | [PROPOSTA_BLOQUEIOS_Q05](PROPOSTA_BLOQUEIOS_Q05.md) | Pacote de decisões não vinculante para Q-04, Q-07, Q-08 e Q-10 (tabela única DQ-01–DQ-25) |
 | [PROPOSTA_AC07_LIMITES](PROPOSTA_AC07_LIMITES.md) | Proposta não vinculante de valores de limite de segurança e de verificações de capacidade para o AC-07 (VAULT_CONTRACT §7.5), com as lacunas de evidência |
 | [PROPOSTA_Q05_BACKUP](PROPOSTA_Q05_BACKUP.md) | Análise da Q-05, registro das escolhas, dependências e recomendação de biblioteca ZIP; regras vigentes em VAULT_CONTRACT §7 |
+| [PROPOSTA_F2_V1](PROPOSTA_F2_V1.md) | Composição aprovada do corpus de compressão e casos F-3; criada e medida na PoC, S-1 aguarda decisão |
 | [RECOVERY_LOG](RECOVERY_LOG.md) | Reconciliações e diferenças entre fontes |
 | [SOURCES](SOURCES.md) | Proveniência, precedência e hashes |
 | [CHANGELOG](CHANGELOG.md) | Histórico conciso de mudanças |

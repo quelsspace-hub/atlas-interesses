@@ -101,3 +101,7 @@ Sete telas e áreas utilitárias propostas estão em [UX_SPECIFICATION.md](UX_SP
 ## 10. Condições de liberação
 
 Fechar propostas necessárias, implementar e executar os testes de domínio/arquivo/nativo, validar fluxos com a proprietária, resolver falhas de integridade e registrar revisão/aceite. Nenhum requisito está marcado como implementado nesta entrega documental.
+
+## Atualização de backup — S-1, 19/10/2026
+
+**DECIDIDO:** [D-016](DECISIONS.md) permite recusar ZIPs externos legítimos por razão de compressão; exportações Atlas permanecem restauráveis via store. Regra central em [VAULT_CONTRACT §7.5](VAULT_CONTRACT.md). Nenhum schema de entidade muda. **PENDENTE:** limite numérico padrão; mecanismo explícito verificado apenas na PoC ([TEST_PLAN §20](TEST_PLAN.md)), não na aplicação V1.
