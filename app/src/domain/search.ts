@@ -35,7 +35,8 @@ export interface ParsedQuery {
 export function parseQuery(query: string): ParsedQuery {
   const include: string[] = []
   const exclude: string[] = []
-  const pattern = /(-?)"([^"]*)"|(-?)(\S+)/g
+  // Aspa de fechamento opcional: durante a digitação de "frase incompleta, já busca a frase.
+  const pattern = /(-?)"([^"]*)(?:"|$)|(-?)(\S+)/g
   for (const m of query.matchAll(pattern)) {
     const negative = (m[1] ?? m[3]) === '-'
     const term = fold((m[2] ?? m[4] ?? '').trim())
@@ -51,6 +52,8 @@ const WEIGHT: Record<Field, number> = { title: 8, aliases: 5, tags: 4, meta: 2, 
 interface Doc {
   record: RecordView
   fields: Record<Field, string>
+  // Todos os campos dobrados juntos, para a exclusão (-termo); calculado uma vez por índice.
+  all: string
   body: { folded: string; map: number[] }
 }
 
@@ -108,10 +111,14 @@ export function buildSearchIndex(index: VaultIndex): SearchIndex {
         meta: fold(meta),
         body: ''
       },
+      all: '',
       body: foldWithMap(record.body)
     }
   })
-  for (const d of docs) d.fields.body = d.body.folded
+  for (const d of docs) {
+    d.fields.body = d.body.folded
+    d.all = `${d.fields.title}\n${d.fields.aliases}\n${d.fields.tags}\n${d.fields.meta}\n${d.fields.body}`
+  }
 
   return {
     size: docs.length,
@@ -121,8 +128,7 @@ export function buildSearchIndex(index: VaultIndex): SearchIndex {
       for (const d of docs) {
         const r = d.record
         if (!passes(r, filters)) continue
-        const all = `${d.fields.title}\n${d.fields.aliases}\n${d.fields.tags}\n${d.fields.meta}\n${d.fields.body}`
-        if (q.exclude.some((t) => all.includes(t))) continue
+        if (q.exclude.length > 0 && q.exclude.some((t) => d.all.includes(t))) continue
         let score = 0
         const matched = new Set<Field>()
         let ok = true

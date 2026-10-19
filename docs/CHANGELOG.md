@@ -19,7 +19,8 @@
   - catálogo de fontes derivado das notas;
   - índice só em memória;
   - sem mudança de schema.
-- Tela Busca e atalho Ctrl+K. Testes 160/160; E2E 10/10. Detalhes em IMPLEMENTATION_STATUS §36 e TEST_PLAN §23.
+- Tela Busca e atalho Ctrl+K. Testes 160/160; E2E 10/10.
+- Revisão do CodeRabbit: frase com aspa aberta, foco no Ctrl+K e exclusão pré-calculada; `dist-test/` limpo a cada build de testes. Detalhes em IMPLEMENTATION_STATUS §36 e TEST_PLAN §23.
 
 ## 2026-10-19 — Aplicativo V1 (Electron) e decisões delegadas
 

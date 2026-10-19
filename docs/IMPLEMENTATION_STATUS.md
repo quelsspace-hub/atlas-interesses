@@ -643,6 +643,11 @@ Comandos executados em `app/`. Resultados detalhados em [TEST_PLAN §22](TEST_PL
   - validação de usabilidade com a proprietária;
   - E2E no executável empacotado não repetido nesta etapa (o CI roda o E2E no build);
   - busca fuzzy e entidade `Source`, adiadas pela D-028.
+- **Revisão do CodeRabbit na PR #6** (três comentários, todos procedentes e corrigidos):
+  - frase com aspa ainda aberta já é buscada como frase, enquanto a pessoa digita;
+  - Ctrl+K com a Busca aberta devolve o foco ao campo;
+  - o texto combinado para a exclusão é calculado uma vez por índice, e a varredura só roda quando há `-termo`.
+  O `build:test` agora limpa `dist-test/`: antes, testes compilados de outras branches podiam continuar sendo executados. `npm test`: 160/160; E2E 10/10, com a frase incompleta e o Ctrl+K.
 - **Próximo no roadmap:** V3, mapa visual sobre as entidades existentes, com zoom/pan, filtros, retorno ao contexto e alternativa em listas.
 
 ## 37. V3 — mapa visual — 19/10/2026

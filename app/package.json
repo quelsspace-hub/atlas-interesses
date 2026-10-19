@@ -13,7 +13,7 @@
     "build:main": "node scripts/build-main.mjs",
     "build:renderer": "vite build",
     "build": "npm run build:main && npm run build:renderer",
-    "build:test": "tsc -p tsconfig.test.json",
+    "build:test": "node -e \"require('fs').rmSync('dist-test',{recursive:true,force:true})\" && tsc -p tsconfig.test.json",
     "test": "npm run runtime && npm run typecheck && npm run build:test && node --test \"dist-test/test/*.test.js\"",
     "start": "npm run build && electron .",
     "e2e": "npm run build && node e2e/journeys.mjs",
