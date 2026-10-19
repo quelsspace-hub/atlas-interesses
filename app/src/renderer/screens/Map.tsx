@@ -11,15 +11,17 @@ import { Button, Empty, ItemProgress, SelectField, routeFor } from '../ui.js'
 // do processo da interface para o retorno ao contexto; nada vai para o vault.
 // `moved`: a pessoa já mexeu no zoom/posição; enquanto false, a vista se reajusta ao tamanho real da área.
 interface ViewState { x: number; y: number; k: number; selected: string | null; filters: MapFilters; list: boolean; fitted: boolean; moved: boolean }
-let saved: ViewState = { x: 0, y: 0, k: 1, selected: null, filters: {}, list: false, fitted: false, moved: false }
+const INITIAL: ViewState = { x: 0, y: 0, k: 1, selected: null, filters: {}, list: false, fitted: false, moved: false }
+// Guardada por vault: abrir outro vault não herda filtros, seleção nem posição do anterior.
+let saved: { vault: string | null; view: ViewState } = { vault: null, view: INITIAL }
 
 const TYPE_MARK: Record<ItemType, string> = { project: 'P', course: 'C', interest: 'I', idea: 'Id', learning_path: 'T', goal: 'M' }
 const clampK = (k: number) => Math.min(3, Math.max(0.15, k))
 
 export function MapScreen() {
-  const { index, navigate } = useAtlas()
-  const [view, setView] = useState<ViewState>(saved)
-  useEffect(() => { saved = view }, [view])
+  const { index, navigate, app } = useAtlas()
+  const [view, setView] = useState<ViewState>(() => (saved.vault === app.vaultPath ? saved.view : INITIAL))
+  useEffect(() => { saved = { vault: app.vaultPath, view } }, [view, app.vaultPath])
   const box = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ w: 0, h: 0 })
   const drag = useRef<{ x: number; y: number; vx: number; vy: number; moved: boolean } | null>(null)
@@ -50,6 +52,20 @@ export function MapScreen() {
     const k = clampK(v.k * factor)
     return { ...v, k, x: cx - ((cx - v.x) * k) / v.k, y: cy - ((cy - v.y) * k) / v.k, moved: true }
   })
+  const zoomRef = useRef(zoomAt)
+  zoomRef.current = zoomAt
+  useEffect(() => {
+    const el = box.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY === 0) return
+      e.preventDefault()
+      const r = el.getBoundingClientRect()
+      zoomRef.current(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - r.left, e.clientY - r.top)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [view.list])
   const setFilters = (patch: Partial<MapFilters>) => setView((v) => ({ ...v, filters: { ...v.filters, ...patch }, fitted: false }))
   const open = (node: MapNode) => { if (node.record) navigate(routeFor(node.record)) }
 
@@ -125,8 +141,7 @@ export function MapScreen() {
             role="application"
             aria-label={`Mapa com ${layout.nodes.length - 1} nós e ${itemCount} itens. Setas movem, + e - aproximam, 0 ajusta. Tab percorre os nós; Enter abre.`}
             onKeyDown={onKey}
-            onWheel={(e) => { const r = box.current!.getBoundingClientRect(); zoomAt(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - r.left, e.clientY - r.top) }}
-            onPointerDown={(e) => { if ((e.target as Element).closest('.map-node')) return; drag.current = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, moved: false }; (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) }}
+                        onPointerDown={(e) => { if ((e.target as Element).closest('.map-node')) return; drag.current = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, moved: false }; (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) }}
             onPointerMove={(e) => { const d = drag.current; if (!d) return; d.moved = d.moved || Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) > 3; setView((v) => ({ ...v, x: d.vx + e.clientX - d.x, y: d.vy + e.clientY - d.y, moved: v.moved || d.moved })) }}
             onPointerUp={() => { if (drag.current && !drag.current.moved) setView((v) => ({ ...v, selected: null })); drag.current = null }}
           >
