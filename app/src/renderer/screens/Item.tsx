@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { itemGroups, itemNotes, itemProgress, nextSortOrder, projectTasks, type RecordView } from '../../domain/derive.js'
 import { ITEM_STATUSES, LABELS, PRIORITIES, PROGRESS_MODES, type Item, type ItemStatus, type NoteType, type ProgressMode } from '../../domain/model.js'
 import { nowIso, useAtlas } from '../state.js'
-import { Button, ConflictDialog, Empty, MarkdownView, Modal, Progress, SaveBar, SelectField, TagPicker, TextArea, TextField, entries, routeFor, useRecordEditor } from '../ui.js'
+import { BackButton, Button, ConflictDialog, Empty, MarkdownView, Modal, Progress, SaveBar, SelectField, TagPicker, TextArea, TextField, entries, routeFor, useRecordEditor } from '../ui.js'
 import { TaskRow } from './Tasks.js'
 
 export function BodyEditor({ body, setBody, fromPath, onAttach }: { body: string; setBody: (v: string) => void; fromPath: string; onAttach?: () => void }) {
@@ -71,7 +71,7 @@ export function ItemScreen({ id }: { id: string }) {
     <div className="page">
       <div className="page-head">
         <div className="stack" style={{ gap: 4 }}>
-          <Button kind="ghost" small onClick={() => navigate({ screen: m.type === 'project' ? 'projects' : 'atlas' })}>← {m.type === 'project' ? 'Projetos' : 'Atlas'}</Button>
+          <BackButton fallback={{ screen: m.type === 'project' ? 'projects' : 'atlas' }} />
           <span className="row"><span className="badge">{LABELS.itemType[m.type]}</span>{archived && <span className="badge archived">Arquivado</span>}</span>
         </div>
         <SaveBar editor={editor} />

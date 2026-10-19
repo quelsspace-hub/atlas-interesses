@@ -4,7 +4,7 @@ import type { RecordView } from '../../domain/derive.js'
 import { markdownLink } from '../../domain/links.js'
 import { LABELS, NOTE_TYPES, type Note, type NoteType } from '../../domain/model.js'
 import { nowIso, useAtlas } from '../state.js'
-import { Button, ConflictDialog, Empty, Modal, SaveBar, SelectField, TagList, TagPicker, TextArea, TextField, entries, routeFor, useRecordEditor } from '../ui.js'
+import { BackButton, Button, ConflictDialog, Empty, Modal, SaveBar, SelectField, TagList, TagPicker, TextArea, TextField, entries, routeFor, useRecordEditor } from '../ui.js'
 import { BodyEditor } from './Item.js'
 
 function matches(r: RecordView, q: string): boolean {
@@ -152,7 +152,7 @@ export function NoteScreen({ id }: { id: string }) {
     <div className="page">
       <div className="page-head">
         <div className="stack" style={{ gap: 4 }}>
-          <Button kind="ghost" small onClick={() => navigate({ screen: 'notes' })}>← Notas</Button>
+          <BackButton fallback={{ screen: 'notes' }} />
           <span className="row"><span className="badge">{LABELS.noteType[m.note_type]}</span>{m.archived_at && <span className="badge archived">Arquivada</span>}</span>
         </div>
         <div className="row">

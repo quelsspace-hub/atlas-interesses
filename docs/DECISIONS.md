@@ -249,3 +249,26 @@ Registre problema, alternativa, impacto sobre arquivos existentes, migração, t
   - entidade `Source` com pasta própria: exigiria schema novo e migração; pode ser reavaliada se o catálogo derivado não bastar;
   - busca fuzzy ou por radical: adiada, porque a substring sem acento cobre o uso em português sem resultados surpreendentes.
 - **Testes:** `app/test/search.test.ts`, jornada E2E 8 e TEST_PLAN §23.
+
+## D-029 — V3: mapa visual
+
+- **DECIDIDO em 19/10/2026** por delegação da proprietária.
+- **Problema:** o roadmap pede, para a V3, um mapa visual sobre as entidades existentes, com zoom/pan, filtros, retorno ao contexto e alternativa em listas. O critério da documentação oficial é “dados íntegros e alternativa em listas”.
+- **Decisão — projeção somente leitura:** o mapa não grava nada e não guarda posições. O layout é calculado de forma determinística a cada exibição (D-011). A disposição manual de nós fica fora da V3: exigiria persistir coordenadas, que não são conteúdo canônico.
+- **Layout radial:**
+  - hub “ATLAS DE INTERESSES” no centro (D-010);
+  - grupos no primeiro anel, na ordem de `sort_order`; “Sem grupo” como nó próprio;
+  - itens no segundo anel, perto do seu grupo. Item com vários grupos aparece **uma vez**, num anel intermediário na média angular dos grupos, com uma aresta para cada (D-004);
+  - notas de contexto opcionais ao redor do item;
+  - tipo do item indicado por letra, não só por cor (D-026); arquivados com contorno tracejado.
+- **Interação:**
+  - zoom por roda, botões e teclas `+`/`-`/`0`; pan por arraste e setas;
+  - nós focáveis por Tab, Enter abre, clique seleciona e destaca as ligações;
+  - painel com tipo, status, grupos e progresso.
+- **Filtros:** tipo, status, tag, notas de contexto e arquivados.
+- **Retorno ao contexto:** histórico de navegação com botão Voltar nas telas de detalhe. A vista do mapa (zoom, posição, seleção, filtros, modo) é preservada em memória ao sair e voltar, e reajustada ao tamanho da área até a pessoa mover a vista.
+- **Alternativa em listas:** “Ver como lista” mostra os mesmos itens visíveis, por grupo, com a mesma regra OR.
+- **Alternativas rejeitadas:**
+  - biblioteca de grafos com simulação de forças: não determinística, mais pesada, e o mapa mudaria a cada abertura;
+  - canvas com posições livres persistidas: adiado, porque exigiria um novo artefato de dados.
+- **Testes:** `app/test/map.test.ts`, jornada E2E 9 e TEST_PLAN §24.

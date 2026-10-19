@@ -4,7 +4,7 @@
 
 ## 1. Situação
 
-**Estado atual (§36):** V2 (busca global e catálogo de fontes, D-028) implementada; testes 160/160 e E2E 10/10. **Antes (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
+**Estado atual (§37):** V3 (mapa visual, D-029) implementada; testes 163/163 e E2E 11/11. **Antes (§36):** V2 (busca global e catálogo de fontes, D-028) implementada; testes 160/160 e E2E 10/10. **Antes (§35):** aplicativo V1 em `app/` (D-017), com testes 154/154, jornadas E2E 9/9 no executável empacotado e instalador NSIS gerado; decisões delegadas D-017 a D-027. *Antes:* suíte principal da PoC com 172/172 testes aprovados no Windows 11 (§33). AC-13: parte automática (§29) e extração por `Expand-Archive`, `tar.exe` e `Shell.Application` verificadas (§33); falta a abertura manual no Explorador. *Redação anterior: 152/152; aceite do AC-13 dependia da extração no Windows 11.*
 
 O estado registrado na consolidação de 18/10/2026 é preservado como proveniência. PoCs delimitadas executadas nos ambientes de 17–18/10 cobrem persistência de um registro, regras D-003/D-004, renomeação de Tag, reconstrução de backlinks, regra pura D-001 e criação de nova permanente em fixture (seção 12). Os recortes não representam entidades completas ou schema V1. Isso não conclui V0, não implementa o aplicativo e não aprova a stack. Tauri 2 + React + TypeScript continua candidata.
 
@@ -644,3 +644,32 @@ Comandos executados em `app/`. Resultados detalhados em [TEST_PLAN §22](TEST_PL
   - E2E no executável empacotado não repetido nesta etapa (o CI roda o E2E no build);
   - busca fuzzy e entidade `Source`, adiadas pela D-028.
 - **Próximo no roadmap:** V3, mapa visual sobre as entidades existentes, com zoom/pan, filtros, retorno ao contexto e alternativa em listas.
+
+## 37. V3 — mapa visual — 19/10/2026
+
+**Autorização:** a proprietária pediu para seguir para a V3 com as mesmas regras. Decisão D-029. Branch `feat/v3-map`, criada sobre `feat/v2-search` (PR #6 ainda sem merge no momento da criação).
+
+- **Implementado:**
+  - `app/src/domain/map.ts`: layout radial determinístico, somente leitura, e lista equivalente;
+  - `app/src/renderer/screens/Map.tsx`:
+    - SVG com zoom e pan por roda, arraste, botões e teclado;
+    - nós focáveis com dica, seleção com destaque e painel;
+    - filtros e “Ver como lista”;
+  - histórico de navegação com `BackButton` no Item, na Nota e no Grupo;
+  - entrada Mapa na sidebar e atalho Alt+8.
+- **Sem mudança:** schema, contratos e dependências.
+- **VERIFICADO (Windows 11 Pro 26200):**
+  - `npm test`: **163/163**, sendo 3 novos em `map.test.ts`: posições, arestas de pertencimento, item compartilhado no anel interno, Sem grupo, arquivados, determinismo, ausência de sobreposição com 60 itens, filtros, notas e equivalência com a lista;
+  - `npm run e2e`: **11/11 jornadas**. A nova jornada 9 confere:
+    1. um nó por item;
+    2. painel com os dois grupos;
+    3. abrir o item e voltar com o mesmo zoom e a mesma seleção;
+    4. lista com o item nos dois grupos;
+    5. SHA-256 de todos os arquivos do vault igual antes e depois do uso do mapa (dados íntegros).
+  - **Inspeção visual:** vault fictício com 4 grupos e 30 itens, nos temas Light e Dark. O ajuste inicial enquadra todo o mapa; os rótulos dos itens aparecem a partir de 55% de zoom ou na seleção.
+- **Pendente:**
+  - usabilidade com a proprietária;
+  - leitor de tela no SVG (os nós têm rótulo acessível; não foi testado com NVDA ou Narrador);
+  - vault com centenas de itens por grupo, que forma arcos externos e não foi medido visualmente;
+  - E2E no executável empacotado não repetido nesta etapa.
+- **Próximo no roadmap:** V4, grafo de links e relações derivadas, claramente distinguidos, com limites para conjuntos grandes.

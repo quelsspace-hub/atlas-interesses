@@ -1,5 +1,16 @@
 # Histórico de mudanças
 
+## 2026-10-19 — V3: mapa visual
+
+- D-029:
+  - mapa radial somente leitura e determinístico (hub, grupos, itens; item compartilhado uma vez, ligado a cada grupo);
+  - zoom e pan por mouse e teclado;
+  - filtros;
+  - painel do nó;
+  - retorno ao contexto (histórico e vista preservada);
+  - alternativa em lista.
+- Testes 163/163; E2E 11/11, com a verificação de que nenhum arquivo do vault muda ao usar o mapa. Detalhes em IMPLEMENTATION_STATUS §37 e TEST_PLAN §24.
+
 ## 2026-10-19 — V2: busca global e catálogo de fontes
 
 - D-028:

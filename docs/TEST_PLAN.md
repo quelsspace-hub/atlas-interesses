@@ -686,3 +686,43 @@ Ambiente idêntico ao §22. Comandos em `app/`: `npm test`, `npm run build` e `n
 6. o catálogo lista a fonte com a nota.
 
 **Não coberto:** leitor de tela na lista de resultados; vault real grande.
+
+## 24. V3 — mapa visual (19/10/2026)
+
+Ambiente idêntico ao §22. Comandos em `app/`: `npm test` e `npm run e2e`.
+
+**`map.test.ts`, 3/3:**
+
+1. **Estrutura do mapa:**
+   - hub em (0, 0);
+   - três grupos, inclusive o grupo sem tags;
+   - nó Sem grupo;
+   - um nó por item;
+   - arquivado oculto por padrão;
+   - item compartilhado com arestas para os dois grupos e mais perto do centro que um item de grupo único;
+   - cor do grupo preservada.
+2. **Robustez:**
+   - mesma entrada produz o mesmo layout;
+   - 60 itens num grupo sem sobreposição de círculos;
+   - filtro por tipo;
+   - notas de contexto com aresta;
+   - arquivados quando pedidos;
+   - limites finitos.
+3. **Lista equivalente:** `mapOutline` tem exatamente os mesmos itens visíveis que o mapa, com a regra OR por grupo.
+
+**Suíte completa:** 163/163.
+
+**E2E:** 11/11. Jornada 9 (V3):
+
+1. um nó por item;
+2. zoom por botão;
+3. seleção com o painel “Grupos: Design, Tecnologia”;
+4. Abrir, e depois “← Mapa” volta com o mesmo percentual de zoom e a mesma seleção;
+5. lista com o item em Design e em Tecnologia;
+6. hash de todos os arquivos do vault idêntico antes e depois.
+
+**Não coberto:**
+
+- leitor de tela;
+- gestos de toque;
+- conjuntos muito grandes (centenas de itens por grupo).
