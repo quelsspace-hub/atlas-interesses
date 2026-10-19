@@ -55,7 +55,7 @@ Não adiar provas críticas de backup para o passo 9: sua viabilidade pertence �
 
 ## 5. V2–V5
 
-- **V2:** busca global no corpo e metadados; filtros combináveis; catálogo de fontes se necessário. Índice descartável.
+- **V2:** busca global no corpo e metadados; filtros combináveis; catálogo de fontes se necessário. Índice descartável. **Implementada em 19/10/2026 (D-028; IMPLEMENTATION_STATUS §36).**
 - **V3:** mapa visual sobre entidades existentes; zoom/pan, filtros, retorno ao contexto e alternativa em listas.
 - **V4:** grafo de links e relações derivadas claramente distinguidos; limites para conjuntos grandes.
 - **V5:** arquitetura explícita de sync, offline, autenticação, conflitos, backup automático e Android.

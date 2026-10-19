@@ -658,3 +658,31 @@ O processo de teste não é o aplicativo; a medida não inclui a janela do Elect
 - abertura manual do AC-13 no Explorador.
 
 Nenhum TC completo, gate ou aceite da V1 é declarado por estes resultados (D-012).
+
+## 23. V2 — busca global e catálogo de fontes (19/10/2026)
+
+Ambiente idêntico ao §22. Comandos em `app/`: `npm test`, `npm run build` e `node e2e/journeys.mjs`.
+
+**`search.test.ts`, 6/6:**
+
+| Caso | O que verifica |
+| --- | --- |
+| Normalização da consulta | Sem acento e sem caixa; frase entre aspas; exclusão |
+| Onde encontra | Corpo com trecho do texto original; título; corpo de captura; resumo; autoria da fonte; aliases; alias de tag (encontra a própria Tag e os registros marcados) |
+| Relevância | Título antes do corpo; arquivados só quando pedidos; `-termo`; frase exata respeita a ordem |
+| Filtros combinados | Tipo de registro, tipo de item, tipo de nota, tags com OR, termo junto com filtro, consulta vazia com filtros |
+| Catálogo | Agrupa a mesma fonte escrita com caixa diferente e prefere a grafia com maiúsculas |
+| Desempenho | 1.000 notas: construção em 43 ms, consulta em 4,4 ms (depois do caminho rápido de normalização; antes, cerca de 300 ms) |
+
+**Suíte completa:** 160/160.
+
+**E2E:** 10/10. A jornada 8 executa:
+
+1. grava a fonte numa nota pela interface;
+2. Ctrl+K e busca por `servicos`: encontra a permanente, a nota de leitura e a captura de origem;
+3. `"texto do plano"` encontra o projeto pelo corpo;
+4. `servicos -sistema` exclui a permanente;
+5. o filtro Item zera o resultado;
+6. o catálogo lista a fonte com a nota.
+
+**Não coberto:** leitor de tela na lista de resultados; vault real grande.

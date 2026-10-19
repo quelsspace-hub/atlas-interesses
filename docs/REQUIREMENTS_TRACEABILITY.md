@@ -133,3 +133,10 @@ REQ-008 → D-015 / VAULT_CONTRACT §7.5 → S-1 / AC-07 → [TEST_PLAN §19](TE
 | F-07, D-007, D-013–D-016, D-018, D-019 | `src/vault/backup`, `service.ts`, Configurações | suítes de backup, `service.test.ts`, `reserved-names.test.ts` | VERIFICADO; diálogos nativos sem E2E |
 | D-017 (ADR-008) | `app/` Electron | E2E no executável empacotado; instalador NSIS | VERIFICADO; assinatura pendente |
 | D-026, D-027 | `styles.css`; `perf.test.ts` | Inspeção visual das capturas; metas atendidas | Parcial: WCAG por combinação pendente |
+
+## V2 — 19/10/2026
+
+| Requisito / decisão | Implementação | Evidência | Estado |
+| --- | --- | --- | --- |
+| Roadmap V2: busca global no corpo e nos metadados, filtros combináveis, índice descartável (D-011, D-028) | `src/domain/search.ts`, `screens/Search.tsx` | `search.test.ts`; E2E jornada 8 | VERIFICADO; usabilidade pendente |
+| Catálogo de fontes, “se necessário” (D-028) | `sourceCatalog` derivado de `source_*` | `search.test.ts`; E2E jornada 8 | VERIFICADO; entidade `Source` adiada |

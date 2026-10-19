@@ -227,3 +227,25 @@ Registre problema, alternativa, impacto sobre arquivos existentes, migração, t
 | D-027 | Q-07 e Q-10 (plataforma e configuração) | V1 visa somente Windows 11 x64. Metas medidas, não bloqueantes: indexar 1.000 registros em ≤ 2 s e salvar em ≤ 200 ms na máquina de referência. `settings.yml` continua só com `settings_version` (nenhuma chave portátil nova na V1). Anexos: qualquer formato, copiados para `assets/` com nome `{UUID}-{nome original saneado}`; sem limite de tamanho além dos de backup. Preferências do dispositivo (vault ativo, recentes, tema) em JSON na pasta de dados do aplicativo. Sem migração automática. | Chaves portáteis de tema/idioma |
 
 **Gate V0 e ADR-008:** a escolha D-017 encerra a candidata. O gate V0 passa a depender só de evidências: a prova nativa (seleção do vault, permissões, reinício, fechamento com alterações pendentes, erros de disco e empacotamento) é executada no aplicativo e registrada em IMPLEMENTATION_STATUS. A abertura manual do AC-13 no Explorador continua pendente de execução humana; não bloqueia a implementação.
+
+## D-028 — Escopo e regras da V2 (busca global e catálogo de fontes)
+
+- **DECIDIDO em 19/10/2026** por delegação da proprietária, no mesmo regime das D-017 a D-027.
+- **Problema:** a documentação oficial prevê para a V2 “pesquisa global e catálogo de fontes”, com o critério “busca de corpo e índice reconstruível”. O catálogo é “previsto, se necessário”.
+- **Busca:**
+  - índice em memória, reconstruído dos registros válidos sempre que o vault muda; nada é persistido (D-011);
+  - campos com peso: título 8, aliases 5, títulos e aliases das tags 4, metadados textuais (resumo, objetivo, descrição, critérios, fonte, URL, provedor) 2, corpo 1;
+  - comparação sem acento (NFD sem marcas) e sem caixa, por substring;
+  - termos combinados por E; `"frase exata"`; `-termo` exclui;
+  - arquivados ocultos por padrão.
+- **Filtros combináveis:**
+  - tipo de registro, tipo e status de item e tipo de nota;
+  - tags com regra OR, a mesma dos grupos (D-004);
+  - opção de incluir arquivados.
+- **Interface:** tela Busca na sidebar, atalhos Ctrl+K e Alt+7, trecho do corpo com o termo destacado.
+- **Catálogo de fontes:** derivado de `source_title`, `source_author`, `source_year` e `source_url` das notas, agrupado por título e autoria sem caixa e sem acento. **Não** cria entidade nem campo novo: o schema 1 (D-020) não muda e não há migração.
+- **Alternativas rejeitadas:**
+  - índice persistido em disco ou banco: viola D-011 sem necessidade, dado o desempenho medido;
+  - entidade `Source` com pasta própria: exigiria schema novo e migração; pode ser reavaliada se o catálogo derivado não bastar;
+  - busca fuzzy ou por radical: adiada, porque a substring sem acento cobre o uso em português sem resultados surpreendentes.
+- **Testes:** `app/test/search.test.ts`, jornada E2E 8 e TEST_PLAN §23.
