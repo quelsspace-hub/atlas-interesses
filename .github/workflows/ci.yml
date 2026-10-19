@@ -1,0 +1,50 @@
+# Suíte cotidiana da PoC (npm test em poc/) no Windows, plataforma prioritária (DQ-01).
+# Casos pesados (ATLAS_AC13_HEAVY, bench/ac13-windows.js --heavy) ficam fora: exigem ~9 GB e dezenas de minutos.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  poc-tests:
+    name: PoC — npm test (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: poc
+    steps:
+      - uses: actions/checkout@v5
+      # npm do lockfile (packageManager npm@10.8.2); os scripts usam o runtime pinado em node-win-x64 (24.22.0).
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.22.0
+          cache: npm
+          cache-dependency-path: poc/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+
+  # Aplicativo V1 (D-017): typecheck, testes de núcleo/domínio/backup, build e jornadas E2E no Electron real.
+  app-tests:
+    name: App — testes, build e E2E (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.22.0
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npm run e2e

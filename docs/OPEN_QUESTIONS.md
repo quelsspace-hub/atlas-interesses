@@ -42,3 +42,30 @@ Registrar escolha, data, responsável, justificativa, documentos afetados e test
 ## Atualização S-1 — 19/10/2026
 
 **DECIDIDO:** alternativa A autorizada (D-016). **VERIFICADO:** mecanismo explícito e avaliação do candidato em TEST_PLAN §20. **PENDENTE:** aprovar o número 128:1 ou solicitar outro orçamento; nenhum padrão instalado. A pendência anterior de escolha entre A/B está resolvida. Windows/AC-13, nomes, Inbox e decisões nativas continuam separados.
+
+## Decisões delegadas — 19/10/2026
+
+**DECIDIDO** por delegação da proprietária ([DECISIONS D-017 a D-027](DECISIONS.md)):
+
+| Questão | Decisão |
+| --- | --- |
+| Q-01 | D-020 |
+| Q-02 | D-021 |
+| Q-03 | D-022 |
+| Q-04 | D-023 |
+| Q-06 | D-024 |
+| Q-08 | D-025 |
+| Q-09 | D-026 |
+| Q-07 e Q-10 | D-027 |
+| ADR-008 | D-017 |
+| S-1 | D-018 |
+| Nomes reservados | D-019 |
+
+As redações acima foram preservadas como histórico.
+
+**Continuam em aberto:**
+
+- validação de usabilidade com a proprietária: textos, layout e atalhos (Q-08);
+- auditoria WCAG por combinação (Q-09);
+- migração de schema futuro e chaves portáteis de `settings.yml` (Q-10);
+- abertura manual do AC-13 no Explorador.

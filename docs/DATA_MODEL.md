@@ -213,3 +213,22 @@ Antes de congelar `schema_version: 1`, resolver Q-01 a Q-05, comprovar parsing/e
 ## Atualização de backup — S-1, 19/10/2026
 
 **DECIDIDO:** [D-016](DECISIONS.md) permite recusar ZIPs externos legítimos por razão de compressão; exportações Atlas permanecem restauráveis via store. Regra central em [VAULT_CONTRACT §7.5](VAULT_CONTRACT.md). Nenhum schema de entidade muda. **PENDENTE:** limite numérico padrão; mecanismo explícito verificado apenas na PoC ([TEST_PLAN §20](TEST_PLAN.md)), não na aplicação V1.
+
+## Atualização — schema_version 1 congelado, 19/10/2026
+
+**DECIDIDO (D-020 a D-022):**
+
+- `schema_version: 1` congelado com os campos e defaults das seções 3 a 9;
+- `success_criteria` é uma lista;
+- `Note.origin_capture_id` aceito;
+- conteúdo da captura no corpo, sem `content` no YAML;
+- tarefas arquivadas contam no progresso pelo `status`.
+
+**Defaults de criação do aplicativo** (não são defaults de leitura):
+
+- Item novo em `backlog`;
+- `progress_mode` conforme o tipo;
+- `sort_order` igual ao maior existente + 1;
+- prioridade ausente é chave omitida.
+
+Validação implementada em `app/src/domain/validate.ts` e verificada com o vault de exemplo.

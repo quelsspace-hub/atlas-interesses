@@ -401,3 +401,15 @@ Versão de schema maior que a suportada abre em modo seguro sem regravação. Is
 ## 9. Evidência mínima da PoC
 
 Registrar SO, runtime, revisão do código, fixture, comandos, resultados e hashes. Separar provas de arquivo de provas nativas: fechar/reabrir app, permissões, fechamento com conteúdo não salvo e limites reais de execução. Ver [plano de testes](TEST_PLAN.md).
+
+## Atualização — aplicativo V1, 19/10/2026
+
+- **§4 (Inbox):** implementado em `app/src/vault/inbox.ts` conforme D-021 e D-023.
+  - Os temporários seguem `.tmp-{UUID}.md`; o manifesto registra `tmp_file` explicitamente.
+  - Regra acrescentada: se nenhum destino foi promovido e falta algum temporário, a conversão é descartada. Só os temporários com o hash esperado são removidos, e a captura continua pendente.
+  - Destino com conteúdo divergente bloqueia e mantém o manifesto.
+  - Verificado em `app/test/inbox.test.ts`.
+- **§7.5:** S-1 = 128:1 por padrão no aplicativo (D-018). Nomes reservados do Windows, finais com espaço ou ponto e `<>:"|?*` são limite de segurança na exportação e na restauração (D-019).
+- **§3:** protocolo de escrita da PoC adotado no aplicativo (D-023).
+
+Redações anteriores preservadas acima.

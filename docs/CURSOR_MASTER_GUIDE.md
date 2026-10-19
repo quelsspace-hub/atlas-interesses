@@ -6,7 +6,7 @@
 
 Abra a raiz do repositório, não apenas `docs/`. A raiz contém README e AGENTS; toda documentação ativa está em `docs/`. Arquivos recebidos foram preservados no ZIP histórico e não são uma segunda especificação vigente.
 
-Existe uma PoC parcial em `poc/`, com suíte sintética e evidência registrada em [IMPLEMENTATION_STATUS](IMPLEMENTATION_STATUS.md). Não existe aplicativo V1 ou integração nativa. Consulte os comandos e limites da PoC antes de propor a próxima etapa; não trate essa prova como gate V0 concluído nem como stack aprovada. Não tente importar `poc/vault_core.js`, que permanece inexistente, nem instalar Tauri sem autorização.
+**Atualização de 19/10/2026:** o aplicativo V1 está em `app/` (Electron + React + TypeScript, D-017), com comandos em [app/README](../app/README.md) e evidências em [IMPLEMENTATION_STATUS §35](IMPLEMENTATION_STATUS.md). A PoC em `poc/` permanece como evidência histórica. *Redação anterior:* “Existe uma PoC parcial em `poc/` [...] Não existe aplicativo V1 ou integração nativa. [...] Não tente importar `poc/vault_core.js`, que permanece inexistente, nem instalar Tauri sem autorização.”
 
 ## 2. Ordem de leitura
 
