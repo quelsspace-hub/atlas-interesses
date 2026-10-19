@@ -62,6 +62,22 @@ test('V3: determinístico, sem sobreposição de itens e com filtros, notas e ar
   assert.ok(Number.isFinite(a.bounds.minX) && a.bounds.maxX > a.bounds.minX)
 })
 
+test('V3: conjuntos diferentes de grupos com a mesma média angular não se sobrepõem', () => {
+  // Quatro grupos em -π/2, 0, π/2, π: {A,C} e {A,B,C} têm média angular 0 (revisão da PR #7).
+  const tags = [60, 61, 62, 63].map(id)
+  const records = [
+    ...tags.map((t, i) => view('tag', `tags/${t}.md`, base(60 + i, `T${i}`))),
+    ...tags.map((t, i) => view('group', `groups/${id(70 + i)}.md`, { ...base(70 + i, `G${i}`), tag_ids: [t], sort_order: i })),
+    item(80, 'AC1', { tag_ids: [tags[0], tags[2]] }), item(81, 'AC2', { tag_ids: [tags[0], tags[2]] }),
+    item(82, 'ABC1', { tag_ids: [tags[0], tags[1], tags[2]] }), item(83, 'ABC2', { tag_ids: [tags[0], tags[1], tags[2]] }),
+    item(84, 'BD', { tag_ids: [tags[1], tags[3]] })
+  ]
+  const nodes = buildMapLayout(buildIndex(records)).nodes.filter((n) => n.kind === 'item')
+  for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+    assert.ok(Math.hypot(nodes[i]!.x - nodes[j]!.x, nodes[i]!.y - nodes[j]!.y) >= nodes[i]!.r + nodes[j]!.r, `${nodes[i]!.label} × ${nodes[j]!.label}`)
+  }
+})
+
 test('V3: alternativa em listas tem os mesmos itens visíveis que o mapa', () => {
   const index = fixture()
   const outline = mapOutline(index)
