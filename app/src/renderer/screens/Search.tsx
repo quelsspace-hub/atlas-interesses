@@ -59,7 +59,8 @@ export function SearchScreen({ initialQuery }: { initialQuery?: string }) {
   // Índice descartável: reconstruído sempre que o índice do vault muda (D-028).
   const search = useMemo(() => (index ? buildSearchIndex(index) : null), [index])
   const filters: SearchFilters = { kinds, itemTypes, itemStatuses: statuses, noteTypes, tagIds, includeArchived }
-  const active = query.trim().length > 0 || kinds.length + itemTypes.length + statuses.length + noteTypes.length + tagIds.length > 0
+  // "Incluir arquivados" também é filtro (D-028): sozinho, lista tudo o que ele permite.
+  const active = includeArchived || query.trim().length > 0 || kinds.length + itemTypes.length + statuses.length + noteTypes.length + tagIds.length > 0
   const hits = useMemo(() => (search && active ? search.search(query, filters) : []), [search, query, active, kinds, itemTypes, statuses, noteTypes, tagIds, includeArchived])
   const sources = useMemo(() => (index ? sourceCatalog(index, includeArchived) : []), [index, includeArchived])
   if (!index || !search) return null

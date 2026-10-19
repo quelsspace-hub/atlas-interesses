@@ -30,6 +30,7 @@ test('fold e parseQuery: sem acento/caixa, frase exata e exclusão', () => {
   assert.deepEqual(parseQuery('   '), { include: [], exclude: [] })
   assert.deepEqual(parseQuery('"design de'), { include: ['design de'], exclude: [] }, 'frase ainda sem aspa de fechamento')
   assert.deepEqual(parseQuery('cafe "jornada do'), { include: ['cafe', 'jornada do'], exclude: [] })
+  assert.deepEqual(parseQuery('design" -rascunho"'), { include: ['design'], exclude: ['rascunho'] }, 'aspas soltas no termo')
 })
 
 test('busca no corpo e nos metadados, sem acento, com trecho do texto original', () => {

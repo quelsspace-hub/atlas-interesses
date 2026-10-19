@@ -39,7 +39,8 @@ export function parseQuery(query: string): ParsedQuery {
   const pattern = /(-?)"([^"]*)(?:"|$)|(-?)(\S+)/g
   for (const m of query.matchAll(pattern)) {
     const negative = (m[1] ?? m[3]) === '-'
-    const term = fold((m[2] ?? m[4] ?? '').trim())
+    // Aspas soltas dentro de um termo (design") não fazem parte do texto procurado.
+    const term = fold((m[2] ?? (m[4] ?? '').replace(/"/g, '')).trim())
     if (!term || term === '-') continue
     ;(negative ? exclude : include).push(term)
   }
