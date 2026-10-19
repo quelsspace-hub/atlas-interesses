@@ -141,7 +141,7 @@ Duas mutações temporárias confirmaram que os testes falham sem a guarda do li
 | AC-10 | D-013 (E-C, DQ-15) | Vault com conteúdo não canônico e com arquivos de sistema da lista fechada | Exportar com “excluir” e com “cancelar”, para o não canônico e para o grupo de arquivos de sistema | “Excluir”: o relatório lista o arquivo (ou o grupo) como excluído e o manifesto não o contém; “cancelar”: nenhum ZIP gerado; nenhum caso omite um arquivo em silêncio; um arquivo fora da lista fechada nunca é tratado como arquivo de sistema. **Extensão (A-01; PLANEJADA):** um registro inválido (`{UUID}.md` que não valida) não aparece como opção de inclusão e bloqueia a exportação até ser corrigido; um `.md` com outro nome numa pasta de registros aparece como não canônico e, se incluído, é restaurado como bytes, sem validação de registro |
 | AC-11 | D-012; F-07 | Todos os casos de falha acima | Inspecionar resultado e estados | Nenhum estado ou mensagem de “concluído” antes da verificação final |
 | AC-12 | Gate V0; TC-17; TC-21; D-013 (P-8) | Aplicativo **nativo** na plataforma-alvo de Q-07 | Exportar e restaurar pela GUI, fechar, reabrir | Repete AC-01, AC-02 e AC-06 no aplicativo real, inclusive permissões. A suíte Node/disco **não substitui** este critério; sem ele TC-13–15 não recebem PASS completo |
-| AC-13 | VAULT_CONTRACT §7.5 (ZIP64 Z-B, DQ-07) | Fixture com ZIP64 forçado (F-3) | Gerar com ZIP64 forçado, restaurar e extrair pelo extrator nativo do Windows 11 | Gravação e leitura corretas com ZIP64; resultado da extração nativa registrado; incompatibilidade inaceitável reabre DQ-07. **VERIFICADO na PoC Node/Linux em 19/10/2026 (§17); compatibilidade com os extratores do Windows 11 PENDENTE. AC-13 completo não aprovado** |
+| AC-13 | VAULT_CONTRACT §7.5 (ZIP64 Z-B, DQ-07) | Fixture com ZIP64 forçado (F-3) | Gerar com ZIP64 forçado, restaurar e extrair pelo extrator nativo do Windows 11 | Gravação e leitura corretas com ZIP64; resultado da extração nativa registrado; incompatibilidade inaceitável reabre DQ-07. **VERIFICADO na PoC Node/Linux em 19/10/2026 (§17); extração por `Expand-Archive`, `tar.exe` e `Shell.Application` no Windows 11 VERIFICADA (§21); abertura manual no Explorador PENDENTE. AC-13 completo não aprovado** |
 | AC-14 | D-013 (P-7, DQ-17) | Backup íntegro com um registro que referencia UUID inexistente | Restaurar | Restauração concluída como cópia verificada, no estado **Verificado com avisos**; o relatório contém o diagnóstico da referência ausente; nenhuma correção ou exclusão automática |
 | AC-15 | D-013 (DQ-23, DQ-24); TC-14 | Restauração interrompida de forma determinística após k arquivos (injeção no adapter) | Simular o reinício com uma nova instância | O diário existe nos dados do aplicativo, fora do vault e do destino, gravado antes de cada item criado (a pasta de destino, cada diretório e cada arquivo; A-02) e sem conteúdo de arquivos; no reinício, o destino aparece como não verificado e “Abrir” não é oferecido |
 | AC-16 | D-013 (DQ-19, DQ-23); TC-14 | Destino de restauração falha com um arquivo estranho acrescentado depois e um sentinela fora do destino | “Remover cópia incompleta” | Inspeção como no AC-06: só os arquivos e diretórios registrados no diário foram removidos, os diretórios de baixo para cima e só quando vazios (A-02); o arquivo estranho e o sentinela têm o mesmo hash; a pasta de destino continua existindo por causa do arquivo estranho; nada fora do destino é tocado; diário detalhado apagado; marcador mínimo presente enquanto a pasta de destino existir. Variante sem arquivo estranho: tudo é removido, inclusive a pasta de destino, e não resta marcador |
@@ -555,3 +555,44 @@ Razão por entrada = bytes descompactados reais / payload comprimido, sem cabeç
 `mise exec node@24.22.0 -- node poc/dist/bench/s1-run.js poc/bench/results/s1-2026-10-19.jsonl`: saída 0, 11/11 casos esperados (2 restaurações verificadas e 9 recusas). [Dados reais](../poc/bench/results/s1-2026-10-19.jsonl). Usa caminho de saída novo; recusa sobrescrever evidência existente. Experimento funcional, sem certificação de desempenho.
 
 **PENDENTE:** aprovação do valor numérico; omissão de `maxCompressionRatio` não ativa S-1. Suíte histórica F-2 permanece sem essa opção para preservar evidência de compatibilidade. AC-07 completo não aprovado; extração Windows/AC-13 permanece bloqueada neste Linux. Não repetidos testes pesados >4 GiB: cobertura deste incremento usa ZIP64 forçado e aritmética exata; resultados pesados anteriores não certificam esta alteração.
+
+## 21. AC-13: extração pelos componentes do Windows 11 — 19/10/2026
+
+**Estado:** VERIFICADO para a extração automatizada pelos três componentes do Windows 11 listados no §17.3. **PENDENTE:** abertura manual no Explorador, que exige interação da proprietária. AC-13 completo, TC-13–TC-15 e gate V0 não aprovados.
+
+### 21.1 Ambiente
+
+Windows 11 Pro, build 26200 (`os.release()` 10.0.26200), x64, NTFS em `C:`. Node `v24.22.0` do pacote `node-win-x64` pinado no projeto, npm `10.8.2`. Windows PowerShell `5.1.26100.9711` (`Expand-Archive`); `C:\Windows\System32\tar.exe` = bsdtar `3.8.9` / libarchive `3.8.9`; `zipfldr.dll` `10.0.26100.8875` (`Shell.Application`). `yazl` `3.3.1`/`yauzl` `3.4.0` do lockfile, sem alteração de manifestos. Base Git `54a0cf1`.
+
+### 21.2 Método
+
+Novo executor `poc/bench/ac13-windows.ts` (SHA-256 `f270df44d4410424bcec5cc1d7942f6d7a43b3ebaddf5a77b2b611cfb1d30aa3`). Gera fixtures sintéticas em temporário exclusivo, exporta com o `exportBackup` de produção (sem alteração) e extrai cada ZIP com `Expand-Archive`, `tar.exe -xf` e `Shell.Application.NameSpace().CopyHere()` (flags 4+16+512+1024, sem UI; espera contagem e bytes estabilizarem). Em cada pasta compara a árvore com o manifesto: caminhos (só `manifest.json` a mais), tamanho e SHA-256 de cada arquivo. A saída usa criação exclusiva; os temporários são removidos e, após a execução, não restou nenhum `atlas-ac13-win-*`.
+
+Casos: (1) clássico pequeno, incluindo `assets/sub/ação-çã.bin` (nome não ASCII, flag UTF-8); (2) mesma fixture com `forceZip64`; (3) 65.536 anexos × 4 KiB + Tag + `settings.yml` + manifesto = 65.539 entradas, ZIP64 automático (semente `atlas-ac19-v1`); (4) anexo de 4.294.967.297 bytes, ZIP64 automático de tamanho/offset.
+
+### 21.3 Comandos e resultados observados
+
+Em `poc/`:
+
+```powershell
+npm test
+.\node_modules\node-win-x64\bin\node.exe dist/bench/ac13-windows.js bench/results/ac13-windows-2026-10-19.jsonl --heavy
+```
+
+`npm test`: código 0, **172/172**, zero falhas/pulados (antes e depois de adicionar o executor). Executor: código 0, 1.568 s, `failures: 0`. [Dados brutos](../poc/bench/results/ac13-windows-2026-10-19.jsonl) (SHA-256 `86affa937c7cfe8fb7b35d517de418aa9f092e93bf62c8bed37a7a9a604ad9b8`).
+
+| Caso | ZIP (bytes) | Expand-Archive | tar.exe | Shell.Application |
+| --- | ---: | --- | --- | --- |
+| Clássico, nome não ASCII | 71.607 | 4/4, 0,6 s | 4/4, 0,04 s | 4/4, 6,7 s |
+| ZIP64 forçado | 71.855 | 4/4, 0,6 s | 4/4, 0,04 s | 4/4, 6,7 s |
+| 65.539 entradas | 289.734.001 | 65.538/65.538, 817,5 s | 65.538/65.538, 28,4 s | 65.538/65.538, 289,3 s |
+| Arquivo > 4 GiB | 4.294.968.785 | 3/3, 23,0 s | 3/3, 10,3 s | 3/3, 51,5 s |
+
+Em todos os 12 registros: código 0, nenhum arquivo ausente, extra ou divergente. Tempos de execução única, não medição MP.
+
+### 21.4 Limites
+
+- `Shell.Application` usa o motor do Explorador (zipfldr), mas sem a interface; abrir e extrair manualmente no Explorador não foi feito. Roteiro: gerar os casos (1) e (2), usar "Extrair tudo" no Explorador e conferir `Get-FileHash` contra o `manifest.json`.
+- Só ZIPs do exportador Atlas (store). ZIPs externos ou deflate não foram extraídos pelos componentes do Windows nesta etapa.
+- Uma máquina; antivírus/energia não controlados. Não valida permissões ou GUI nativas (AC-12, AC-18).
+- Nenhuma incompatibilidade observada: esta evidência não dá motivo para reabrir DQ-07.

@@ -101,6 +101,15 @@ O manifesto/lockfile do repositório fixa `node-win-x64` e `npm ci` direto não 
 
 Evidência e limites: [TEST_PLAN §17](../docs/TEST_PLAN.md) e [IMPLEMENTATION_STATUS §29](../docs/IMPLEMENTATION_STATUS.md). A extração pelos componentes do Windows 11 continua pendente. Validar no Node/Linux não aprova essa compatibilidade nem o AC-13 completo.
 
+**Windows 11 (19/10/2026):** extração pelos componentes do sistema, a partir de `poc/` após `npm test`:
+
+```powershell
+.\node_modules\node-win-x64\bin\node.exe dist/bench/ac13-windows.js bench/results/nova-execucao.jsonl          # casos leves
+.\node_modules\node-win-x64\bin\node.exe dist/bench/ac13-windows.js bench/results/nova-execucao.jsonl --heavy  # + 65.539 entradas e > 4 GiB (~26 min nesta máquina; pico estimado de ~9 GB: ZIP + uma extração por vez)
+```
+
+Exige saída inexistente. Resultado: 12/12 em [TEST_PLAN §21](../docs/TEST_PLAN.md). Abertura manual no Explorador continua pendente.
+
 ## Limites da escrita
 
 O adapter cria destinos com abertura exclusiva (`wx`), não com consulta prévia de existência. Para editar, calcula a revisão SHA-256 lida, grava e sincroniza um temporário ao lado do destino, relê o original imediatamente antes de `rename`, compara a revisão e confere o conteúdo persistido depois do rename. Conflitos preservam os bytes externos e carregam o rascunho local e hashes no diagnóstico. A limpeza só remove um temporário depois de a abertura exclusiva o criar; erro `EEXIST` não remove o arquivo alheio. Falha após possível substituição resulta em estado incerto; não há rollback automático.
